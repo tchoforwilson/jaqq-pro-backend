@@ -1,7 +1,8 @@
 'use strict';
 import { Router } from 'express';
-import * as authController from '../../controllers/authController.js';
+import * as authController from '../../controllers/authentication/userAuthController.js';
 import * as userController from '../../controllers/userController.js';
+import { uploadPhoto, resizePhoto } from '../../utilities/imageUpload.js';
 
 const router = Router();
 
@@ -14,9 +15,9 @@ router.use(authController.protect);
 
 router.patch('/updatePassword', authController.updatePassword);
 router.patch(
-  '/editeProfile',
-  userController.uploadUserPhoto,
-  userController.resizeUserPhoto,
+  '/editProfile',
+  uploadPhoto,
+  resizePhoto,
   userController.editProfile
 );
 
