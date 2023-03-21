@@ -17,8 +17,16 @@ const signToken = (id) => {
  * @param {Number} statusCode -> Response status code
  * @param {Response} res -> Response object
  */
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
+
+  res.cookie('jwt', token, {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+  });
 
   // remove password in output
   user.password = undefined;
@@ -42,7 +50,7 @@ export const register = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     dateOfBirth: new Date(req.body.dateOfBirth),
   });
-  createSendToken(newUser, 201, res);
+  createSendToken(newUser, 201, req, res);
 });
 
 export const login = catchAsync(async (req, res, next) => {
@@ -64,8 +72,16 @@ export const login = catchAsync(async (req, res, next) => {
   }
 
   // 3) If everything ok, send token to client
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
+
+export const logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
+};
 
 /**
  * @breif middleware function to protect routes, this middleware
@@ -79,6 +95,8 @@ export const protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -129,5 +147,5 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   // User.findByIdAndUpdate will NOT work as intended!
 
   // 4) Log user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
