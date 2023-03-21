@@ -1,54 +1,47 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const morgan = require('morgan');
-const http = require('http');
+import { config } from 'dotenv';
+import mongoose from 'mongoose';
 
-require('dotenv').config();
-
-const app = express();
-const server = http.createServer(app);
-
-
-
-const port = process.env.PORT || 8080;
-
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
-
-/* Connect To MongoDB now */
-    const uri = process.env.ATLAS_URI;
-    mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true});
-
-    const connection = mongoose.connection;
-    connection.once('open', () => {
-        console.log("MongoDB connection established successfully");
-    })
-
-
-//Middlewares
-app.use(morgan('dev'))
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-);
-app.use(bodyParser.json());
-
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to JAQQ" });
+// Throw uncaught exception before app begins to run
+process.on('uncaughtException', (err) => {
+  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+  console.log(err.name, err.message);
+  process.exit(1);
 });
 
-// Map files
-    // const authenticate = require('./routes/api/authenticate');
+config({ path: './config.env' });
+import app from './app.js';
 
-    // app.use('/authenticate', authenticate);
-//
+// Connect to database
+let DATABASE = process.env.DATABASE_LOCAL;
+if (process.env.NODE_ENV === 'production') DATABASE = process.env.DATABASE_HOST;
+if (process.env.NODE_ENV === 'test') DATABASE = process.env.DATABASE_TEST;
 
-/// app.listen
-server.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
+mongoose
+  .connect(DATABASE, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log('Database connection successfull....');
+  })
+  .catch((err) => {
+    console.log('Unable to connect to database:💥 ', err.message);
+  });
+// Launch server
+const port = process.env.PORT || 9000;
+const server = app.listen(port, () => {
+  console.log(`App running on port ${port}....`);
+});
+
+// Throw unhandled rejection after app runs
+process.on('unhandledRejection', (err) => {
+  console.log('UNHANDLER REJECTION! 💥 Shutting down...');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
+  server.close(() => {
+    console.log('💥 Process terminated!');
+  });
 });
