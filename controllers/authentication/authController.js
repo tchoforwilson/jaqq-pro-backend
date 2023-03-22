@@ -54,6 +54,7 @@ export const register = (Model) =>
       phone: req.body.phone,
       password: req.body.password,
       passwordConfirm: req.body.passwordConfirm,
+      device: req.body.device,
       dateOfBirth: new Date(req.body.dateOfBirth),
     });
     createSendToken(newMember, 201, req, res);

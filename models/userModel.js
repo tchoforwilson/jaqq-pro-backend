@@ -52,7 +52,28 @@ const userSchema = new Schema({
     },
   },
   passwordChangedAt: Date,
-});
+  device: { type: String },
+  verified: { 
+    type: Boolean, 
+    default: false,
+  },
+  is_active: { 
+    type: Boolean, 
+    default: true,
+  },
+  is_blocked: { 
+    type: Boolean,
+    default: false,
+  },
+  is_deleted: {
+    type: Boolean,
+    default: false,
+  },
+  reports: {
+    type: Number,
+    default: 0,
+  },
+}, { timestamps: true });
 
 /**
  * @breif middleware to hash user password before save

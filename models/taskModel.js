@@ -14,19 +14,16 @@ const taskSchema = new Schema(
         required: [true, 'Task must have a service provider'],
       },
     ],
-    createdOn: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+    timestamps: true,
+  },
 );
 
 /**
- * @breif When finding tasks,populate with service providers
+ * @breif When finding tasks, populate with service providers
  */
 taskSchema.pre(/^find/, function (next) {
   this.populate({
