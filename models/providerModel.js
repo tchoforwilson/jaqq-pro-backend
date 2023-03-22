@@ -1,4 +1,3 @@
-'use strict';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
 import { Schema, model } from 'mongoose';
@@ -31,6 +30,27 @@ const providerSchema = new Schema({
     required: [true, 'Please tell us your date of birth!'],
   },
   photo: String,
+  device: { type: String },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+  is_active: {
+    type: Boolean,
+    default: true,
+  },
+  is_blocked: {
+    type: Boolean,
+    default: false,
+  },
+  is_deleted: {
+    type: Boolean,
+    default: false,
+  },
+  reports: {
+    type: Number,
+    default: 0,
+  },
   password: {
     type: String,
     required: [true, 'Please provide a password!'],
@@ -52,27 +72,6 @@ const providerSchema = new Schema({
     },
   },
   passwordChangedAt: Date,
-  device: { type: String },
-  verified: { 
-    type: Boolean, 
-    default: false,
-  },
-  is_active: { 
-    type: Boolean, 
-    default: true,
-  },
-  is_blocked: { 
-    type: Boolean,
-    default: false,
-  },
-  is_deleted: {
-    type: Boolean,
-    default: false,
-  },
-  reports: {
-    type: Number,
-    default: 0,
-  },
 });
 
 /**
