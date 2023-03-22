@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { Schema, model } from 'mongoose';
 
 const pricingSchema = new Schema(
   {
@@ -9,15 +8,22 @@ const pricingSchema = new Schema(
       required: [true, 'providers can set their minimum price for a task'],
     },
     task: {
-        type: Schema.Types.ObjectId,
-        ref: 'Task',
-        required: true,
+      type: Schema.Types.ObjectId,
+      ref: 'Task',
+      required: true,
     },
     minPrice: {
-        type: Number,
-        required: true
-    }
-  }, { timestamps: true },
+      type: Number,
+      required: true,
+    },
+  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
+  { timestamps: true }
 );
 
-module.exports = mongoose.model('Pricing', pricingSchema);
+const Pricing = model('Pricing', pricingSchema);
+
+export default Pricing;
