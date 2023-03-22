@@ -1,4 +1,3 @@
-'use strict';
 import { Schema, model } from 'mongoose';
 
 const taskSchema = new Schema(
@@ -19,7 +18,7 @@ const taskSchema = new Schema(
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
     timestamps: true,
-  },
+  }
 );
 
 /**
