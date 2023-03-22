@@ -1,15 +1,12 @@
-'use strict';
-'use strict';
 import jwt from 'jsonwebtoken';
 import { promisify } from 'util';
 import AppError from '../../utilities/appError.js';
 import catchAsync from '../../utilities/catchAsync.js';
 
-const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+const signToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
-};
 
 /**
  * @breif Create and send member(user or provider) login token with response status code
