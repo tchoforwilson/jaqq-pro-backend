@@ -1,79 +1,84 @@
-'use strict';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
 import { Schema, model } from 'mongoose';
 
-const userSchema = new Schema({
-  firstName: {
-    type: String,
-    required: [true, 'Please provide your first name!'],
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Please provide your last name!'],
-  },
-  email: {
-    type: String,
-    required: [true, 'Please provide your email'],
-    unique: true,
-    lowercase: true,
-    validate: [validator.isEmail, 'Please provide a valid email'],
-  },
-  phone: {
-    type: String,
-    required: [true, 'Please provide your phone number'],
-    unique: true,
-    lowercase: true,
-    validate: [validator.isMobilePhone, 'Please provide a valid phone number'],
-  },
-  dateOfBirth: {
-    type: Date,
-    required: [true, 'Please tell us your date of birth!'],
-  },
-  photo: String,
-  password: {
-    type: String,
-    required: [true, 'Please provide a password!'],
-    minLength: [
-      8,
-      'Password too short, password should have minimum 8 characters',
-    ],
-    select: false,
-  },
-  passwordConfirm: {
-    type: String,
-    required: [true, 'Please confirm your password'],
-    validate: {
-      // This only works on CREATE and SAVE!!!
-      validator: function (el) {
-        return el === this.password;
-      },
-      message: 'Passwords are not the same!',
+const userSchema = new Schema(
+  {
+    firstName: {
+      type: String,
+      required: [true, 'Please provide your first name!'],
     },
+    lastName: {
+      type: String,
+      required: [true, 'Please provide your last name!'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Please provide your email'],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, 'Please provide a valid email'],
+    },
+    phone: {
+      type: String,
+      required: [true, 'Please provide your phone number'],
+      unique: true,
+      lowercase: true,
+      validate: [
+        validator.isMobilePhone,
+        'Please provide a valid phone number',
+      ],
+    },
+    dateOfBirth: {
+      type: Date,
+      required: [true, 'Please tell us your date of birth!'],
+    },
+    photo: String,
+    device: { type: String },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    is_active: {
+      type: Boolean,
+      default: true,
+    },
+    is_blocked: {
+      type: Boolean,
+      default: false,
+    },
+    is_deleted: {
+      type: Boolean,
+      default: false,
+    },
+    reports: {
+      type: Number,
+      default: 0,
+    },
+    password: {
+      type: String,
+      required: [true, 'Please provide a password!'],
+      minLength: [
+        8,
+        'Password too short, password should have minimum 8 characters',
+      ],
+      select: false,
+    },
+    passwordConfirm: {
+      type: String,
+      required: [true, 'Please confirm your password'],
+      validate: {
+        // This only works on CREATE and SAVE!!!
+        validator: function (el) {
+          return el === this.password;
+        },
+        message: 'Passwords are not the same!',
+      },
+    },
+    passwordChangedAt: Date,
   },
-  passwordChangedAt: Date,
-  device: { type: String },
-  verified: { 
-    type: Boolean, 
-    default: false,
-  },
-  is_active: { 
-    type: Boolean, 
-    default: true,
-  },
-  is_blocked: { 
-    type: Boolean,
-    default: false,
-  },
-  is_deleted: {
-    type: Boolean,
-    default: false,
-  },
-  reports: {
-    type: Number,
-    default: 0,
-  },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 /**
  * @breif middleware to hash user password before save
