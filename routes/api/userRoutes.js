@@ -1,4 +1,3 @@
-'use strict';
 import { Router } from 'express';
 import * as authController from '../../controllers/authentication/userAuthController.js';
 import * as userController from '../../controllers/userController.js';
@@ -14,11 +13,6 @@ router.get('/logout', authController.logout);
 router.use(authController.protect);
 
 router.patch('/updatePassword', authController.updatePassword);
-router.patch(
-  '/editProfile',
-  uploadPhoto,
-  resizePhoto,
-  userController.editProfile
-);
+router.patch('/editProfile', uploadPhoto, resizePhoto, userController.updateMe);
 
 export default router;
