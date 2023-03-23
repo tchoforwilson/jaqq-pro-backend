@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import pricingRouter from './pricingRoutes.js';
 import * as authController from '../../controllers/authentication/providerAuthController.js';
 import * as providerController from '../../controllers/providerController.js';
 import { uploadPhoto, resizePhoto } from '../../utilities/imageUpload.js';
