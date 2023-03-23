@@ -1,11 +1,13 @@
-'use strict';
 import { Router } from 'express';
+import pricingRouter from './pricingRoutes.js';
 import * as authController from '../../controllers/authentication/providerAuthController.js';
 import * as taskController from '../../controllers/taskController.js';
 
 const router = Router();
 
 router.use(authController.protect);
+
+router.use('/:taskId/pricings', pricingRouter);
 
 router
   .route('/')
