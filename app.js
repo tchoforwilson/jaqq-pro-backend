@@ -12,6 +12,7 @@ import AppError from './utilities/appError.js';
 import userRouter from './routes/api/userRoutes.js';
 import providerRouter from './routes/api/providerRoutes.js';
 import taskRouter from './routes/api/taskRoutes.js';
+import pricingRouter from './routes/api/pricingRoutes.js';
 
 config({ path: './config.env' });
 
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/providers', providerRouter);
 app.use('/api/v1/tasks', taskRouter);
+app.use('/api/v1/pricings', pricingRouter);
 
 // INVALID ROUTES
 app.all('*', (req, res, next) => {
