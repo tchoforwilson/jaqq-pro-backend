@@ -21,6 +21,13 @@ const taskSchema = new Schema(
   }
 );
 
+// Virtual populate
+taskSchema.virtual('pricings', {
+  ref: 'Pricing',
+  foreignField: 'task',
+  localField: '_id',
+});
+
 /**
  * @breif When finding tasks, populate with service providers
  */
