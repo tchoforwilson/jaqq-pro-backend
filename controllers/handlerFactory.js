@@ -1,4 +1,3 @@
-'use strict';
 import APIFeatures from '../utilities/apiFeatures.js';
 import AppError from '../utilities/appError.js';
 import catchAsync from '../utilities/catchAsync.js';
@@ -71,7 +70,10 @@ export const updateOne = (Model) =>
  */
 export const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
+    // To allow for nested GET tasks & provider on pricing
     let filter = {};
+    if (req.params.taskId) filter = { task: req.params.taskId };
+    if (req.params.providerId) filter = { provider: req.params.providerId };
 
     // EXECUTE THE QUERY
     const features = new APIFeatures(Model.find(filter), req.query)
