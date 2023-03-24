@@ -31,6 +31,12 @@ pricingSchema.index({ provider: 1, task: 1 }, { unique: true });
  * @breif When finding a pricing, add provider to the search result
  */
 pricingSchema.pre(/^find/, function (next) {
+  // Populate with task
+  this.populate({
+    path: 'task',
+    select: 'label',
+  });
+  // Populate with provider
   this.populate({
     path: 'provider',
     select: 'firstName lastName photo phone',
