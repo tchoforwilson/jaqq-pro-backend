@@ -15,30 +15,12 @@ const taskSchema = new Schema(
     ],
   },
   {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-    timestamps: true,
+    timestamps: {
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    },
   }
 );
-
-// Virtual populate
-taskSchema.virtual('pricings', {
-  ref: 'Pricing',
-  foreignField: 'task',
-  localField: '_id',
-});
-
-/**
- * @breif When finding tasks, populate with service providers
- */
-taskSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: 'providers',
-    select: '-__v -passwordChangedAt',
-  });
-
-  next();
-});
 
 const Task = model('Task', taskSchema);
 
