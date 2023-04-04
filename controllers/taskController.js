@@ -1,9 +1,13 @@
-'use strict';
-import * as factory from './handlerFactory.js';
+import factory from './handlerFactory.js';
 import Task from '../models/taskModel.js';
 
-export const createTask = factory.createOne(Task);
-export const getTask = factory.getOne(Task, { path: 'pricings' });
-export const getAllTasks = factory.getAll(Task);
-export const updateTask = factory.updateOne(Task);
-export const deleteTask = factory.deleteOne(Task);
+export default {
+  createTask: factory.createOne(Task),
+  getTask: factory.getOne(Task, {
+    path: 'providers',
+    select: '-__v -passwordChangedAt',
+  }),
+  getAllTasks: factory.getAll(Task),
+  updateTask: factory.updateOne(Task),
+  deleteTask: factory.deleteOne(Task),
+};
