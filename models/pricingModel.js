@@ -14,12 +14,8 @@ const pricingSchema = new Schema(
     },
     minPrice: {
       type: Number,
-      required: true,
+      required: [true, 'Pricing must minimum price'],
     },
-  },
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
   },
   { timestamps: true }
 );
