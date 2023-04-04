@@ -3,6 +3,11 @@ import { promisify } from 'util';
 import AppError from '../../utilities/appError.js';
 import catchAsync from '../../utilities/catchAsync.js';
 
+/**
+ * @breif Generate member jwt token from member object
+ * @param {Object} member -> Member (user or provider) object
+ * @returns JWT
+ */
 const signToken = (member) =>
   jwt.sign({ member }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
