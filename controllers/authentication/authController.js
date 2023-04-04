@@ -3,8 +3,8 @@ import { promisify } from 'util';
 import AppError from '../../utilities/appError.js';
 import catchAsync from '../../utilities/catchAsync.js';
 
-const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
+const signToken = (member) =>
+  jwt.sign({ member }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
@@ -15,7 +15,7 @@ const signToken = (id) =>
  * @param {Response} res -> Response object
  */
 const createSendToken = (member, statusCode, req, res) => {
-  const token = signToken(member._id);
+  const token = signToken(member);
 
   res.cookie('jwt', token, {
     expires: new Date(
@@ -124,7 +124,7 @@ export const protect = (Model) =>
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
     // 3) Check if user still exists
-    const currentMember = await Model.findById(decoded.id);
+    const currentMember = await Model.findById(decoded.id).member._id;
     if (!currentMember) {
       return next(
         new AppError(
