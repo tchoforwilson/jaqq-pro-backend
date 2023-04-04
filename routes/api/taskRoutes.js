@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import pricingRouter from './pricingRoutes.js';
-import * as authController from '../../controllers/authentication/providerAuthController.js';
-import * as taskController from '../../controllers/taskController.js';
+import authController from '../../controllers/authentication/providerAuthController.js';
+import taskController from '../../controllers/taskController.js';
 
 const router = Router();
 
