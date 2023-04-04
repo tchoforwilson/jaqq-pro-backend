@@ -1,6 +1,6 @@
 import AppError from '../utilities/appError.js';
 import catchAsync from '../utilities/catchAsync.js';
-import * as factory from './handlerFactory.js';
+import factory from './handlerFactory.js';
 
 /**
  * @breif Filter out unwanted fields in an object
@@ -8,7 +8,7 @@ import * as factory from './handlerFactory.js';
  * @param  {...any} allowedFields -> Allowed fields array
  * @returns {Object}
  */
-export const filterObj = (obj, ...allowedFields) => {
+const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
     if (allowedFields.includes(el)) newObj[el] = obj[el];
@@ -23,7 +23,7 @@ export const filterObj = (obj, ...allowedFields) => {
  * @param {Response} res -> Response object
  * @param {Next} next -> Next Function
  */
-export const getMe = (req, res, next) => {
+const getMe = (req, res, next) => {
   req.params.id = req.member.id;
   next();
 };
@@ -35,7 +35,7 @@ export const getMe = (req, res, next) => {
  * @param  {...any} updateValues -> Collection fields allowed to be updated
  * @returns
  */
-export const updateMe = (Model, ...updateValues) =>
+const updateMe = (Model, ...updateValues) =>
   catchAsync(async (req, res, next) => {
     // 1) Create error if user POSTs password data
     if (req.body.password || req.body.passwordConfirm) {
@@ -75,7 +75,7 @@ export const updateMe = (Model, ...updateValues) =>
  * @param {Collection} Model -> Collection model
  * @returns Function
  */
-export const deleteMe = (Model) =>
+const deleteMe = (Model) =>
   catchAsync(async (req, res, next) => {
     await Model.findByIdAndUpdate(req.member.id, { is_active: false });
 
@@ -85,16 +85,28 @@ export const deleteMe = (Model) =>
     });
   });
 
-export const createMember = (req, res) => {
+const createMember = (req, res) => {
   res.status(500).json({
     status: 'error',
     message: 'This route is not defined! Please use /signup instead',
   });
 };
 
-export const getMember = (Model) => factory.getOne(Model);
-export const getAllMembers = (Model) => factory.getAll(Model);
+const getMember = (Model) => factory.getOne(Model);
+const getAllMembers = (Model) => factory.getAll(Model);
 
 // Do NOT update passwords with this!
-export const updateMember = (Model) => factory.updateOne(Model);
-export const deleteMember = (Model) => factory.deleteOne(Model);
+const updateMember = (Model) => factory.updateOne(Model);
+const deleteMember = (Model) => factory.deleteOne(Model);
+
+export default {
+  filterObj,
+  getMe,
+  updateMe,
+  deleteMe,
+  createMember,
+  getMember,
+  getAllMembers,
+  updateMember,
+  deleteMember,
+};

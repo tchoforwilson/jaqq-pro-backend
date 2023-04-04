@@ -1,9 +1,10 @@
-'use strict';
 import Provider from '../../models/providerModel.js';
-import * as authController from './authController.js';
+import authController from './authController.js';
 
-export const register = authController.register(Provider);
-export const login = authController.login(Provider);
-export const logout = authController.logout;
-export const protect = authController.protect(Provider);
-export const updatePassword = authController.updatePassword(Provider);
+export default {
+  register: authController.register(Provider),
+  login: authController.login(Provider),
+  logout: authController.logout,
+  protect: authController.protect(Provider),
+  updatePassword: authController.updatePassword(Provider),
+};

@@ -7,7 +7,7 @@ import catchAsync from '../utilities/catchAsync.js';
  * @param {Collection} Model -> Database collection
  * @returns function
  */
-export const createOne = (Model) =>
+const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.body);
 
@@ -24,7 +24,7 @@ export const createOne = (Model) =>
  * @param {String} popOptions -> Populate option for other collection
  * @returns function
  */
-export const getOne = (Model, popOptions) =>
+const getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
     let query = await Model.findById(req.params.id);
 
@@ -47,7 +47,7 @@ export const getOne = (Model, popOptions) =>
  * @param {Collection} Model -> Database collection
  * @returns function
  */
-export const updateOne = (Model) =>
+const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -68,7 +68,7 @@ export const updateOne = (Model) =>
  * @param {Collection} Model -> Database collection
  * @returns function
  */
-export const getAll = (Model) =>
+const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
     // To allow for nested GET tasks & provider on pricing
     let filter = {};
@@ -99,7 +99,7 @@ export const getAll = (Model) =>
  * @param {Collection} Model -> Database collection
  * @returns function
  */
-export const deleteOne = (Model) =>
+const deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params.id);
 
@@ -112,3 +112,11 @@ export const deleteOne = (Model) =>
       data: null,
     });
   });
+
+export default {
+  createOne,
+  getOne,
+  updateOne,
+  getAll,
+  deleteOne,
+};

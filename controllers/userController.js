@@ -1,20 +1,20 @@
 import User from '../models/userModel.js';
-import * as memberController from './memberController.js';
+import memberController from './memberController.js';
 
-export const { getMe } = memberController;
-export const updateMe = memberController.updateMe(
-  User,
-  'firstName',
-  'lastName',
-  'email',
-  'phone',
-  'dateOfBirth'
-);
-export const deleteMe = memberController.deleteMe(User);
-
-export const createUser = memberController.createMember;
-export const getUser = memberController.getMember;
-export const getAllUsers = memberController.getAllMembers;
-
-export const updateUser = memberController.updateMember;
-export const deleteUser = memberController.deleteMember;
+export default {
+  getMe: memberController.getMe,
+  updateMe: memberController.updateMe(
+    User,
+    'firstName',
+    'lastName',
+    'email',
+    'phone',
+    'dateOfBirth'
+  ),
+  deleteMe: memberController.deleteMe(User),
+  createUser: memberController.createMember,
+  getUser: memberController.getMember(User),
+  getAllUsers: memberController.getAllMembers(User),
+  updateUser: memberController.updateMember(User),
+  deleteUser: memberController.deleteMember(User),
+};

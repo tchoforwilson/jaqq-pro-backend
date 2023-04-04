@@ -47,7 +47,7 @@ const createSendToken = (member, statusCode, req, res) => {
  * @param {Collection} Model
  * @returns Function
  */
-export const register = (Model) =>
+const register = (Model) =>
   catchAsync(async (req, res, next) => {
     const newMember = await Model.create({
       firstName: req.body.firstName,
@@ -69,7 +69,7 @@ export const register = (Model) =>
  * @param {Collection} Model -> Member Collection model
  * @returns Function
  */
-export const login = (Model) =>
+const login = (Model) =>
   catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -92,7 +92,7 @@ export const login = (Model) =>
     createSendToken(member, 200, req, res);
   });
 
-export const logout = (req, res) => {
+const logout = (req, res) => {
   res.cookie('jwt', '', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
@@ -106,7 +106,7 @@ export const logout = (req, res) => {
  * @param {Collection} Model -> member collection model
  * @return Function
  */
-export const protect = (Model) =>
+const protect = (Model) =>
   catchAsync(async (req, res, next) => {
     // 1) Getting token and check of it's there
     let token;
@@ -129,7 +129,7 @@ export const protect = (Model) =>
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
     // 3) Check if user still exists
-    const currentMember = await Model.findById(decoded.id).member._id;
+    const currentMember = await Model.findById(decoded.member._id);
     if (!currentMember) {
       return next(
         new AppError(
@@ -159,7 +159,7 @@ export const protect = (Model) =>
  * @param {Collection} Model -> Member collection model
  * @returns Function
  */
-export const updatePassword = (Model) =>
+const updatePassword = (Model) =>
   catchAsync(async (req, res, next) => {
     // 1) Get member from collection
     const member = await Model.findById(req.member.id).select('+password');
@@ -180,3 +180,11 @@ export const updatePassword = (Model) =>
     // 4) Log member in, send JWT
     createSendToken(member, 200, req, res);
   });
+
+export default {
+  register,
+  login,
+  logout,
+  protect,
+  updatePassword,
+};
