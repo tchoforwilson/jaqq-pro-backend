@@ -13,14 +13,18 @@ router.get('/logout', authController.logout);
 router.use(authController.protect);
 
 router.patch('/updatePassword', authController.updatePassword);
-router.get('/me', providerController.getMe, providerController.getProvider);
+router.get(
+  '/profile',
+  providerController.getMe,
+  providerController.getProvider
+);
 router.patch(
   '/editProfile',
   uploadPhoto,
   resizePhoto,
   providerController.updateMe
 );
-router.delete('/deleteMe', providerController.deleteMe);
+router.delete('/deleteProfile', providerController.deleteMe);
 
 // TODO: this routes here should be restricted to a user with role "admin"
 
