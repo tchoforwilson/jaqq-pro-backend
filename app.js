@@ -1,4 +1,3 @@
-'use strict';
 import express, { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -40,7 +39,6 @@ app.use(cookieParser());
 // Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  console.log(req.body);
   next();
 });
 
