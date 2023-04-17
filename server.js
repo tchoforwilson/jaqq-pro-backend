@@ -12,8 +12,8 @@ config({ path: './config.env' });
 import app from './app.js';
 
 // Connect to database
-let DATABASE = process.env.DATABASE_LOCAL;
-if (process.env.NODE_ENV === 'production') DATABASE = process.env.DATABASE_HOST;
+let DATABASE = process.env.DATABASE_DEV;
+if (process.env.NODE_ENV === 'production') DATABASE = process.env.DATABASE_PROD;
 if (process.env.NODE_ENV === 'test') DATABASE = process.env.DATABASE_TEST;
 
 mongoose
@@ -45,3 +45,5 @@ process.on('SIGTERM', () => {
     console.log('💥 Process terminated!');
   });
 });
+
+export default server;
