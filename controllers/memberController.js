@@ -1,20 +1,7 @@
 import AppError from '../utilities/appError.js';
 import catchAsync from '../utilities/catchAsync.js';
 import factory from './handlerFactory.js';
-
-/**
- * @breif Filter out unwanted fields in an object
- * @param {Object} obj -> Provided object
- * @param  {...any} allowedFields -> Allowed fields array
- * @returns {Object}
- */
-const filterObj = (obj, ...allowedFields) => {
-  const newObj = {};
-  Object.keys(obj).forEach((el) => {
-    if (allowedFields.includes(el)) newObj[el] = obj[el];
-  });
-  return newObj;
-};
+import util from '../utilities/utils.js';
 
 /**
  * @breif Set the current parameter id to member id, this is to enable
@@ -48,7 +35,7 @@ const updateMe = (Model, ...updateValues) =>
     }
 
     // 2) Filtered out unwanted fields names that are not allowed to be updated
-    const filteredBody = filterObj(req.body, ...updateValues);
+    const filteredBody = util.filterObj(req.body, ...updateValues);
     if (req.file) filteredBody.photo = req.file.filename;
 
     // 3) Update user document
@@ -100,7 +87,6 @@ const updateMember = (Model) => factory.updateOne(Model);
 const deleteMember = (Model) => factory.deleteOne(Model);
 
 export default {
-  filterObj,
   getMe,
   updateMe,
   deleteMe,
