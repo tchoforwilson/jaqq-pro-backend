@@ -1,6 +1,7 @@
 import validator from 'validator';
 import bcrypt from 'bcrypt';
-import { Schema, model } from 'mongoose';
+import { Schema, model, plugin } from 'mongoose';
+import utils from '../utilities/utils.js';
 
 const providerSchema = new Schema({
   firstName: {
@@ -18,12 +19,21 @@ const providerSchema = new Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email'],
   },
-  phone: {
-    type: String,
-    required: [true, 'Please provide your phone number'],
-    unique: true,
-    lowercase: true,
-    validate: [validator.isMobilePhone, 'Please provide a valid phone number'],
+  contact: {
+    telephone: {
+      type: String,
+      required: [true, 'Please provide your phone number'],
+      unique: true,
+      lowercase: true,
+      validate: [
+        validator.isMobilePhone,
+        'Please provide a valid phone number',
+      ],
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
   },
   dateOfBirth: {
     type: Date,
@@ -72,6 +82,8 @@ const providerSchema = new Schema({
     },
   },
   passwordChangedAt: Date,
+  code: Number,
+  codeExpires: Date,
 });
 
 /**
@@ -99,9 +111,21 @@ providerSchema.pre('save', async function (next) {
  */
 providerSchema.methods.correctPassword = async function (
   candidatePassword,
-  ProviderPassword
+  providerPassword
 ) {
-  return await bcrypt.compare(candidatePassword, ProviderPassword);
+  return await bcrypt.compare(candidatePassword, providerPassword);
+};
+
+/**
+ * @breif Method to compare if provider provided code with stored code
+ * @param {Number} candidateCode -> User provided code
+ * @param {Number} providerCode -> Stored code
+ * @returns {Boolean}
+ *   TRUE if code are the same
+ *   FALSE  if code are not the same
+ */
+providerSchema.methods.correctCode = function (candidateCode, providerCode) {
+  return candidateCode === providerCode;
 };
 
 /**
@@ -132,6 +156,11 @@ providerSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   // False means NOT changed
   return false;
 };
+
+/**
+ * @breif Plugin to reload schema object
+ */
+plugin(utils.reloadRecord);
 
 const Provider = model('Provider', providerSchema);
 

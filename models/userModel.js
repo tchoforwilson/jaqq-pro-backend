@@ -1,6 +1,7 @@
 import validator from 'validator';
 import bcrypt from 'bcrypt';
-import { Schema, model } from 'mongoose';
+import { Schema, model, plugin } from 'mongoose';
+import utils from '../utilities/utils.js';
 
 const userSchema = new Schema(
   {
@@ -19,15 +20,21 @@ const userSchema = new Schema(
       lowercase: true,
       validate: [validator.isEmail, 'Please provide a valid email'],
     },
-    phone: {
-      type: String,
-      required: [true, 'Please provide your phone number'],
-      unique: true,
-      lowercase: true,
-      validate: [
-        validator.isMobilePhone,
-        'Please provide a valid phone number',
-      ],
+    contact: {
+      telephone: {
+        type: String,
+        required: [true, 'Please provide your telephone number'],
+        unique: true,
+        lowercase: true,
+        validate: [
+          validator.isMobilePhone,
+          'Please provide a valid phone number',
+        ],
+      },
+      verified: {
+        type: Boolean,
+        default: false,
+      },
     },
     dateOfBirth: {
       type: Date,
@@ -76,6 +83,8 @@ const userSchema = new Schema(
       },
     },
     passwordChangedAt: Date,
+    code: Number,
+    codeExpires: Date,
   },
   { timestamps: true }
 );
@@ -111,6 +120,18 @@ userSchema.methods.correctPassword = async function (
 };
 
 /**
+ * @breif Method to compare if user provided code with stored code
+ * @param {Number} candidateCode -> User provided code
+ * @param {Number} userCode -> Stored code
+ * @returns {Boolean}
+ *   TRUE if code are the same
+ *   FALSE  if code are not the same
+ */
+userSchema.methods.correctCode = function (candidateCode, userCode) {
+  return candidateCode === userCode;
+};
+
+/**
  * @breif middleware to check for password change
  */
 userSchema.pre('save', function (next) {
@@ -138,6 +159,11 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   // False means NOT changed
   return false;
 };
+
+/**
+ * @breif Plugin to reload schema object
+ */
+plugin(utils.reloadRecord);
 
 const User = model('User', userSchema);
 
