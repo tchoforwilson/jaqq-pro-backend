@@ -8,6 +8,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
+    "test": "NODE_ENV=production mocha tests/**/*.test.js --watchAll --verbose --coverage --timeout 10000",
     "debug": "ndb server.js"
   },
   "author": "",
@@ -50,8 +51,11 @@
     "eslint-plugin-react": "^7.32.2",
     "generate-random-numbers": "^1.0.3",
     "jest": "^29.5.0",
+    "mocha": "^10.2.0",
+    "moment-random": "^1.1.0",
     "ndb": "^1.1.5",
     "random": "^4.1.0",
+    "random-item": "^4.0.1",
     "supertest": "^6.3.3"
   }
 }
