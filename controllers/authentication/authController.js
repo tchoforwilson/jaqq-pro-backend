@@ -1,7 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { promisify } from 'util';
+import Randomstring from 'randomstring';
+import moment from 'moment';
+import sendMessage from '../../utilities/sms.js';
 import AppError from '../../utilities/appError.js';
 import catchAsync from '../../utilities/catchAsync.js';
+import utils from '../../utilities/utils.js';
 
 /**
  * @breif Generate member jwt token from member object
@@ -43,22 +47,91 @@ const createSendToken = (member, statusCode, req, res) => {
 };
 
 /**
+ * @breif Generate and send user tel authentication sms
+ * @param {Object} user -> User model object
+ * @returns {Function}
+ */
+const generateAndSendCode = catchAsync(async (Model, member, next) => {
+  // 1. Generate random sms code
+  let code = Randomstring.generate({
+    length: 5,
+    charset: 'numeric',
+  });
+  let codeExpires = new Date(Date.now() + 20 * 60 * 1000);
+
+  // 2. Build message
+  const message = `Your Jaqq authentication code is ${code}.\nSubmit this code to verify your phone number`;
+
+  // 3. Send message to member
+  try {
+    await sendMessage(message, `+237${member.contact.telephone}`); // TODO: This dialer code shouldn't be appended
+  } catch (err) {
+    // 4. Reset values if error in sending sms
+    code = null;
+    codeExpires = null;
+    return next(
+      new AppError('Invalid contact or unable to validate telephone', 500)
+    );
+  }
+
+  // 5. Save generated code and expiry date
+  await Model.findByIdAndUpdate(member.id, {
+    code,
+    codeExpires,
+  }); // ? Look for a better way to save this
+});
+
+/**
+ * @breif Resend member verification code
+ * @param {Object} member
+ * @returns {Function}
+ */
+const resendcode = (Model) =>
+  catchAsync(async (req, res, next) => {
+    // 1. Make sure member is not verified before resend code
+    if (req.member.contact.verified) {
+      return next(
+        new AppError('Invalid request, your are already authenticated', 400)
+      );
+    }
+
+    // 2. Generate and send code
+    generateAndSendCode(Model, req.member, next);
+
+    // 3. Send response
+    res.status(200).json({ status: 'success', data: null });
+  });
+
+/**
  * @breif register a new member (user/provider) in the database
  * @param {Collection} Model
  * @returns Function
  */
 const register = (Model) =>
   catchAsync(async (req, res, next) => {
-    const newMember = await Model.create({
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      email: req.body.email,
-      phone: req.body.phone,
-      password: req.body.password,
-      passwordConfirm: req.body.passwordConfirm,
-      device: req.body.device,
-      dateOfBirth: new Date(req.body.dateOfBirth),
-    });
+    // 1. Get filtered value
+    const filteredBody = utils.filterObj(
+      req.body,
+      'firstName',
+      'lastName',
+      'email',
+      'contact',
+      'password',
+      'passwordConfirm',
+      'device',
+      'dateOfBirth'
+    );
+    // filter values
+    moment(filteredBody.dateOfBirth, 'DD/MM/YYYY HH:mm:ss').toISOString(); // set date of birth to ISOS string
+    if (req.body.contact.verified) filteredBody.contact.verified = undefined;
+
+    // 2. Create new member (user or provider)
+    const newMember = await Model.create(filteredBody);
+
+    // 3. Generate and send verification sms
+    generateAndSendCode(Model, newMember, next);
+
+    // 4. Send response
     createSendToken(newMember, 201, req, res);
   });
 
@@ -71,17 +144,18 @@ const register = (Model) =>
  */
 const login = (Model) =>
   catchAsync(async (req, res, next) => {
-    const { email, password } = req.body;
+    const { contact, password } = req.body;
 
-    // 1) Check if email and password exist
-    if (!email || !password) {
+    // 1) Check if contact and password exist
+    if (!contact || !password) {
       return next(
         new AppError('Please provide email or contact and password!', 400)
       );
     }
+
     // 2) Check if member exists && password is correct
     const member = await Model.findOne({
-      $or: [{ email }, { phone: email }],
+      $or: [{ email: contact }, { 'contact.telephone': contact }],
     }).select('+password');
 
     if (!member || !(await member.correctPassword(password, member.password))) {
@@ -90,6 +164,44 @@ const login = (Model) =>
 
     // 3) If everything ok, send token to client
     createSendToken(member, 200, req, res);
+  });
+
+const verifyMe = (Model) =>
+  catchAsync(async (req, res, next) => {
+    // 1. Get code
+    const { code } = req.body;
+    if (!code) {
+      return next(new AppError('Please provide code', 400));
+    }
+    // 2. Get member
+    const member = await Model.findOne({
+      $or: [
+        { email: req.member.email },
+        { 'contact.telephone': req.member.contact.telephone },
+      ],
+    });
+    // 3. Verify if code has expire
+    if (Date.now() > member.codeExpires) {
+      return next(new AppError('Your code has expired', 400));
+    }
+    // 4. Check if code matches
+    if (!member.correctCode(code, member.code)) {
+      return next(new AppError('Codes did not match', 401));
+    }
+    // 4. Update user verification status to true
+    // ? Check if there is a better way to do this
+    await Model.findByIdAndUpdate(member.id, {
+      'contact.verified': true,
+    });
+    // Remove from output
+    member.code = undefined;
+    member.codeExpires = undefined;
+
+    // 5. Send response
+    res.status(200).json({
+      status: 'success',
+      data: null,
+    });
   });
 
 const logout = (req, res) => {
@@ -155,6 +267,47 @@ const protect = (Model) =>
   });
 
 /**
+ * @breif Restrict access only to members with verified contacts
+ * @returns
+ */
+const restrictToVerified = (req, res, next) => {
+  if (!req.member.contact.verified) {
+    return next(
+      new AppError(
+        'Your are not allowed to performed this action, please authenticate your contact /verifyMe',
+        403
+      )
+    );
+  }
+  next();
+};
+
+/**
+ * @breif Update member contacts telephone and set the verified status to FALSE.
+ * The a new code is generate for the member to authenticate their contact
+ */
+const updateContact = (Model) =>
+  catchAsync(async (req, res, next) => {
+    // 1. Modify contact
+    const updatedMember = await Model.findByIdAndUpdate(req.member.id, {
+      'contact.telephone': req.body.telephone,
+      'contact.verified': false,
+    });
+
+    // 2. Generate and send contact verification code
+    generateAndSendCode(Model, updatedMember, next);
+
+    // 3. Reload data
+    await updatedMember.reload();
+
+    // 3. Send response
+    res.status(200).json({
+      status: 'success',
+      data: updatedMember,
+    });
+  });
+
+/**
  * @breif Update member(user/provider) password
  * @param {Collection} Model -> Member collection model
  * @returns Function
@@ -182,9 +335,13 @@ const updatePassword = (Model) =>
   });
 
 export default {
+  resendcode,
   register,
   login,
+  verifyMe,
   logout,
   protect,
+  restrictToVerified,
+  updateContact,
   updatePassword,
 };
