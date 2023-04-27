@@ -8,7 +8,6 @@ export default {
     'firstName',
     'lastName',
     'email',
-    'phone',
     'dateOfBirth'
   ),
   deleteMe: memberController.deleteMe(User),
