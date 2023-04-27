@@ -13,6 +13,7 @@ router.get('/logout', authController.logout);
 router.use(authController.protect);
 
 router.patch('/updatePassword', authController.updatePassword);
+router.patch('/updateContact', authController.updateContact);
 router.get(
   '/profile',
   providerController.getMe,
@@ -25,6 +26,8 @@ router.patch(
   providerController.updateMe
 );
 router.delete('/deleteProfile', providerController.deleteMe);
+router.post('/verifyMe', authController.verifyMe);
+router.get('/resendCode', authController.resendCode);
 
 // TODO: this routes here should be restricted to a user with role "admin"
 
