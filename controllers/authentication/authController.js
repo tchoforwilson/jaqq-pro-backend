@@ -1,11 +1,11 @@
-import jwt from 'jsonwebtoken';
-import { promisify } from 'util';
-import Randomstring from 'randomstring';
-import moment from 'moment';
-import sendMessage from '../../utilities/sms.js';
-import AppError from '../../utilities/appError.js';
-import catchAsync from '../../utilities/catchAsync.js';
-import utils from '../../utilities/utils.js';
+import jwt from "jsonwebtoken";
+import { promisify } from "util";
+import Randomstring from "randomstring";
+import moment from "moment";
+import sendMessage from "../../utilities/sms.js";
+import AppError from "../../utilities/appError.js";
+import catchAsync from "../../utilities/catchAsync.js";
+import utils from "../../utilities/utils.js";
 
 /**
  * @breif Generate member jwt token from member object
@@ -26,19 +26,19 @@ const signToken = (member) =>
 const createSendToken = (member, statusCode, req, res) => {
   const token = signToken(member);
 
-  res.cookie('jwt', token, {
+  res.cookie("jwt", token, {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    secure: req.secure || req.headers["x-forwarded-proto"] === "https",
   });
 
   // remove password in output
   member.password = undefined;
 
   res.status(statusCode).json({
-    status: 'success',
+    status: "success",
     token,
     data: {
       member,
@@ -55,7 +55,7 @@ const generateAndSendCode = catchAsync(async (Model, member, next) => {
   // 1. Generate random sms code
   let code = Randomstring.generate({
     length: 5,
-    charset: 'numeric',
+    charset: "numeric",
   });
   let codeExpires = new Date(Date.now() + 20 * 60 * 1000);
 
@@ -70,7 +70,7 @@ const generateAndSendCode = catchAsync(async (Model, member, next) => {
     code = null;
     codeExpires = null;
     return next(
-      new AppError('Invalid contact or unable to validate telephone', 500)
+      new AppError("Invalid contact or unable to validate telephone", 500)
     );
   }
 
@@ -91,7 +91,7 @@ const resendcode = (Model) =>
     // 1. Make sure member is not verified before resend code
     if (req.member.contact.verified) {
       return next(
-        new AppError('Invalid request, your are already authenticated', 400)
+        new AppError("Invalid request, your are already authenticated", 400)
       );
     }
 
@@ -99,7 +99,7 @@ const resendcode = (Model) =>
     generateAndSendCode(Model, req.member, next);
 
     // 3. Send response
-    res.status(200).json({ status: 'success', data: null });
+    res.status(200).json({ status: "success", data: null });
   });
 
 /**
@@ -112,17 +112,17 @@ const register = (Model) =>
     // 1. Get filtered value
     const filteredBody = utils.filterObj(
       req.body,
-      'firstName',
-      'lastName',
-      'email',
-      'contact',
-      'password',
-      'passwordConfirm',
-      'device',
-      'dateOfBirth'
+      "firstName",
+      "lastName",
+      "email",
+      "contact",
+      "password",
+      "passwordConfirm",
+      "device",
+      "dateOfBirth"
     );
     // filter values
-    moment(filteredBody.dateOfBirth, 'DD/MM/YYYY HH:mm:ss').toISOString(); // set date of birth to ISOS string
+    moment(filteredBody.dateOfBirth, "DD/MM/YYYY HH:mm:ss").toISOString(); // set date of birth to ISOS string
     if (req.body.contact.verified) filteredBody.contact.verified = undefined;
 
     // 2. Create new member (user or provider)
@@ -149,17 +149,17 @@ const login = (Model) =>
     // 1) Check if contact and password exist
     if (!contact || !password) {
       return next(
-        new AppError('Please provide email or contact and password!', 400)
+        new AppError("Please provide email or contact and password!", 400)
       );
     }
 
     // 2) Check if member exists && password is correct
     const member = await Model.findOne({
-      $or: [{ email: contact }, { 'contact.telephone': contact }],
-    }).select('+password');
+      $or: [{ email: contact }, { "contact.telephone": contact }],
+    }).select("+password");
 
     if (!member || !(await member.correctPassword(password, member.password))) {
-      return next(new AppError('Incorrect email or contact or password', 401));
+      return next(new AppError("Incorrect email or contact or password", 401));
     }
 
     // 3) If everything ok, send token to client
@@ -171,27 +171,27 @@ const verifyMe = (Model) =>
     // 1. Get code
     const { code } = req.body;
     if (!code) {
-      return next(new AppError('Please provide code', 400));
+      return next(new AppError("Please provide code", 400));
     }
     // 2. Get member
     const member = await Model.findOne({
       $or: [
         { email: req.member.email },
-        { 'contact.telephone': req.member.contact.telephone },
+        { "contact.telephone": req.member.contact.telephone },
       ],
     });
     // 3. Verify if code has expire
     if (Date.now() > member.codeExpires) {
-      return next(new AppError('Your code has expired', 400));
+      return next(new AppError("Your code has expired", 400));
     }
     // 4. Check if code matches
     if (!member.correctCode(code, member.code)) {
-      return next(new AppError('Codes did not match', 401));
+      return next(new AppError("Codes did not match", 401));
     }
     // 4. Update user verification status to true
     // ? Check if there is a better way to do this
     await Model.findByIdAndUpdate(member.id, {
-      'contact.verified': true,
+      "contact.verified": true,
     });
     // Remove from output
     member.code = undefined;
@@ -199,17 +199,17 @@ const verifyMe = (Model) =>
 
     // 5. Send response
     res.status(200).json({
-      status: 'success',
+      status: "success",
       data: null,
     });
   });
 
 const logout = (req, res) => {
-  res.cookie('jwt', '', {
+  res.cookie("jwt", "", {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
-  res.status(200).json({ status: 'success' });
+  res.status(200).json({ status: "success" });
 };
 
 /**
@@ -224,16 +224,16 @@ const protect = (Model) =>
     let token;
     if (
       req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
+      req.headers.authorization.startsWith("Bearer")
     ) {
-      token = req.headers.authorization.split(' ')[1];
+      token = req.headers.authorization.split(" ")[1];
     } else if (req.cookies.jwt) {
       token = req.cookies.jwt;
     }
 
     if (!token) {
       return next(
-        new AppError('You are not logged in! Please log in to get access.', 401)
+        new AppError("You are not logged in! Please log in to get access.", 401)
       );
     }
 
@@ -242,10 +242,11 @@ const protect = (Model) =>
 
     // 3) Check if user still exists
     const currentMember = await Model.findById(decoded.member._id);
+
     if (!currentMember) {
       return next(
         new AppError(
-          'The member belonging to this token does no longer exist.',
+          "The member belonging to this token does no longer exist.",
           401
         )
       );
@@ -255,7 +256,7 @@ const protect = (Model) =>
     if (currentMember.changedPasswordAfter(decoded.iat)) {
       return next(
         new AppError(
-          'User recently changed password! Please log in again.',
+          "User recently changed password! Please log in again.",
           401
         )
       );
@@ -274,7 +275,7 @@ const restrictToVerified = (req, res, next) => {
   if (!req.member.contact.verified) {
     return next(
       new AppError(
-        'Your are not allowed to performed this action, please authenticate your contact /verifyMe',
+        "Your are not allowed to performed this action, please authenticate your contact /verifyMe",
         403
       )
     );
@@ -290,8 +291,8 @@ const updateContact = (Model) =>
   catchAsync(async (req, res, next) => {
     // 1. Modify contact
     const updatedMember = await Model.findByIdAndUpdate(req.member.id, {
-      'contact.telephone': req.body.telephone,
-      'contact.verified': false,
+      "contact.telephone": req.body.telephone,
+      "contact.verified": false,
     });
 
     // 2. Generate and send contact verification code
@@ -302,7 +303,7 @@ const updateContact = (Model) =>
 
     // 3. Send response
     res.status(200).json({
-      status: 'success',
+      status: "success",
       data: updatedMember,
     });
   });
@@ -315,13 +316,13 @@ const updateContact = (Model) =>
 const updatePassword = (Model) =>
   catchAsync(async (req, res, next) => {
     // 1) Get member from collection
-    const member = await Model.findById(req.member.id).select('+password');
+    const member = await Model.findById(req.member.id).select("+password");
 
     // 2) Check if POSTed current password is correct
     if (
       !(await member.correctPassword(req.body.passwordCurrent, member.password))
     ) {
-      return next(new AppError('Your current password is wrong.', 401));
+      return next(new AppError("Your current password is wrong.", 401));
     }
 
     // 3) If so, update password
