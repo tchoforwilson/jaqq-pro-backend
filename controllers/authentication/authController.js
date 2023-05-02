@@ -2,10 +2,12 @@ import jwt from "jsonwebtoken";
 import { promisify } from "util";
 import Randomstring from "randomstring";
 import moment from "moment";
+
 import sendMessage from "../../utilities/sms.js";
 import AppError from "../../utilities/appError.js";
 import catchAsync from "../../utilities/catchAsync.js";
 import utils from "../../utilities/utils.js";
+import config from "../../configurations/config.js";
 
 /**
  * @breif Generate member jwt token from member object
@@ -13,8 +15,8 @@ import utils from "../../utilities/utils.js";
  * @returns JWT
  */
 const signToken = (member) =>
-  jwt.sign({ member }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+  jwt.sign({ member }, config.jwt.secret, {
+    expiresIn: config.jwt.expiresIn,
   });
 
 /**
@@ -28,7 +30,7 @@ const createSendToken = (member, statusCode, req, res) => {
 
   res.cookie("jwt", token, {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + config.jwt.cookieExpires * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
     secure: req.secure || req.headers["x-forwarded-proto"] === "https",
