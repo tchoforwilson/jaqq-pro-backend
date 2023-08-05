@@ -7,8 +7,8 @@ import User from '../models/user.model.js';
 import sendMessage from '../utilities/sms.js';
 import AppError from '../utilities/appError.js';
 import catchAsync from '../utilities/catchAsync.js';
-import { filterObj } from '../utilities/utils.js';
 import config from '../configurations/config.js';
+import { filterObj } from '../utilities/utils.js';
 
 /**
  * @breif Generate user jwt token from user object
@@ -55,7 +55,7 @@ const createSendToken = (user, statusCode, req, res) => {
  * @returns {Function}
  */
 const generateAndSendSMSCode = (user) =>
-  catchAsync(async (next) => {
+  catchAsync(async (req, res, next) => {
     // 1. Generate random sms code
     let code = Randomstring.generate({
       length: 5,
@@ -68,7 +68,7 @@ const generateAndSendSMSCode = (user) =>
 
     // 3. Send message to user
     try {
-      await sendMessage(message, `+237${user.phone}`); // TODO: This dialer code shouldn't be appended
+      await sendMessage(message, user.phone);
     } catch (err) {
       // 4. Reset values if error in sending sms
       code = null;
@@ -83,6 +83,8 @@ const generateAndSendSMSCode = (user) =>
       lastVerificationSMSCode: code,
       smsCodeExpiresAt: codeExpires,
     }); // ? Look for a better way to save this
+
+    next();
   });
 
 /**
@@ -102,7 +104,7 @@ const resendSMSCode = catchAsync(async (req, res, next) => {
   }
 
   // 2. Generate and send code
-  generateAndSendSMSCode(req.user);
+  await generateAndSendSMSCode(req.user);
 
   // 3. Send response
   res.status(200).json({ status: 'success', data: null });
@@ -126,13 +128,16 @@ const register = catchAsync(async (req, res, next) => {
     'birthday'
   );
   // filter values
+
+  // Add country code to number
+  filteredBody.phone = config.cameroon_country_code + filteredBody.phone;
   moment(filteredBody.birthday, 'DD/MM/YYYY HH:mm:ss').toISOString(); // set date of birth to ISOS string
 
   // 2. Create new user (user or provider)
   const newUser = await User.create(filteredBody);
 
   // 3. Generate and send verification sms
-  generateAndSendSMSCode(newUser);
+  await generateAndSendSMSCode(newUser);
 
   // 4. Send response
   createSendToken(newUser, 201, req, res);
@@ -148,13 +153,23 @@ const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   // 1) Check if contact and password exist
-  if (!phone || !password) {
-    return next(new AppError('Please provide email or phone number!', 400));
+  if (!email || !password) {
+    return next(
+      new AppError('Please provide email or phone number and password!', 400)
+    );
   }
+
+  /**
+   * Check user email if it is  a number of string
+   * for phone
+   * ? Is this necessary and good practice
+   */
+  let phone;
+  if (typeof email === 'number') phone = config.cameroon_country_code + email;
 
   // 2) Check if user exists && password is correct
   const user = await User.findOne({
-    $or: [{ email }, { phone: email }],
+    $or: [{ email }, { phone }],
   }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {

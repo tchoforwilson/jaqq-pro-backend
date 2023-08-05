@@ -20,8 +20,9 @@ const userSchema = new Schema(
       validate: [validator.isEmail, 'Please provide a valid email'],
     },
     phone: {
-      type: Number,
-      required: [true, 'Please provide your telephone number'],
+      type: String,
+      required: [true, 'Please provide your phone number'],
+      maxlength: [13, 'A phone number must be 13 digits'],
       unique: true,
       validate: [
         validator.isMobilePhone,
