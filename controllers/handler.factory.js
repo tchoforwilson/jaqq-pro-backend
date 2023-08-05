@@ -1,18 +1,18 @@
-import APIFeatures from "../utilities/apiFeatures.js";
-import AppError from "../utilities/appError.js";
-import catchAsync from "../utilities/catchAsync.js";
+import APIFeatures from '../utilities/apiFeatures.js';
+import AppError from '../utilities/appError.js';
+import catchAsync from '../utilities/catchAsync.js';
 
 /**
  * @breif Create a new document in a database collection
  * @param {Collection} Model -> Database collection
- * @returns function
+ * @returns {Function}
  */
 const createOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.body);
 
     res.status(201).json({
-      status: "success",
+      status: 'success',
       data: doc,
     });
   });
@@ -22,7 +22,7 @@ const createOne = (Model) =>
  * using the parameter request id
  * @param {Collection} Model -> Database collection
  * @param {String} popOptions -> Populate option for other collection
- * @returns function
+ * @returns {Function}
  */
 const getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
@@ -33,10 +33,10 @@ const getOne = (Model, popOptions) =>
     const doc = await query;
 
     if (!doc)
-      return next(new AppError("document not found with that ID!", 404));
+      return next(new AppError('document not found with that ID!', 404));
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: doc,
     });
   });
@@ -45,7 +45,7 @@ const getOne = (Model, popOptions) =>
  * @breif Update a single a documnent in the collection, from the
  * request paramter id
  * @param {Collection} Model -> Database collection
- * @returns function
+ * @returns {Function}
  */
 const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
@@ -54,10 +54,10 @@ const updateOne = (Model) =>
       runValidators: true,
     });
 
-    if (!doc) return next(new AppError("No document found with that ID!", 404));
+    if (!doc) return next(new AppError('No document found with that ID!', 404));
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: doc,
     });
   });
@@ -66,7 +66,7 @@ const updateOne = (Model) =>
  * @breif Retrieve all document from a collection, documents are filtered, sorted,
  * limited and paginated
  * @param {Collection} Model -> Database collection
- * @returns function
+ * @returns {Function}
  */
 const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
@@ -86,7 +86,7 @@ const getAll = (Model) =>
 
     // SEND RESPONSE
     res.status(200).json({
-      status: "success",
+      status: 'success',
       results: docs.length,
       data: {
         data: docs,
@@ -97,18 +97,18 @@ const getAll = (Model) =>
 /**
  * @breif Delete a single document in the database collection
  * @param {Collection} Model -> Database collection
- * @returns function
+ * @returns {Function}
  */
 const deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params.id);
 
     if (!doc) {
-      return next(new AppError("No document found with that ID", 404));
+      return next(new AppError('No document found with that ID', 404));
     }
 
     res.status(204).json({
-      status: "success",
+      status: 'success',
       data: null,
     });
   });

@@ -1,20 +1,20 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 const pricingSchema = new Schema(
   {
-    provider: {
-      type: Schema.ObjectId,
-      ref: 'Provider',
-      required: [true, 'providers can set their minimum price for a task'],
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User can set their minimum price for a task"],
     },
     task: {
-      type: Schema.ObjectId,
-      ref: 'Task',
-      required: [true, 'Pricing should have a task'],
+      type: Schema.Types.ObjectId,
+      ref: "Task",
+      required: [true, "Pricing should have a task"],
     },
     minPrice: {
       type: Number,
-      required: [true, 'Pricing must minimum price'],
+      required: [true, "Pricing must minimum price"],
     },
   },
   { timestamps: true }
@@ -29,17 +29,17 @@ pricingSchema.index({ provider: 1, task: 1 }, { unique: true });
 pricingSchema.pre(/^find/, function (next) {
   // Populate with task
   this.populate({
-    path: 'task',
-    select: 'label',
+    path: "task",
+    select: "label",
   });
   // Populate with provider
   this.populate({
-    path: 'provider',
-    select: 'firstName lastName photo phone',
+    path: "user",
+    select: "firstName lastName photo phone",
   });
   next();
 });
 
-const Pricing = model('Pricing', pricingSchema);
+const Pricing = model("Pricing", pricingSchema);
 
 export default Pricing;

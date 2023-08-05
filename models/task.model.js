@@ -8,13 +8,15 @@ const taskSchema = new Schema(
     },
     providers: [
       {
-        type: Schema.ObjectId,
-        ref: 'Provider',
+        type: Schema.Types.ObjectId,
+        ref: 'User',
         required: [true, 'Task must have a service provider'],
       },
     ],
   },
   {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
     timestamps: {
       createdAt: 'createdAt',
       updatedAt: 'updatedAt',

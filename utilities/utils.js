@@ -4,7 +4,7 @@
  * @param  {...any} allowedFields -> Allowed fields array
  * @returns {Object}
  */
-const filterObj = (obj, ...allowedFields) => {
+export const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
     if (allowedFields.includes(el)) newObj[el] = obj[el];
@@ -19,15 +19,10 @@ const filterObj = (obj, ...allowedFields) => {
  * @param {Schema} schema -> document schema
  * @return {Object}
  */
-const reloadRecord = (schema) => {
+export const reloadRecord = (schema) => {
   schema.methods.reload = async function () {
     const record = await this.constructor.findById(this);
     Object.assign(this, record);
     return record;
   };
-};
-
-export default {
-  filterObj,
-  reloadRecord,
 };

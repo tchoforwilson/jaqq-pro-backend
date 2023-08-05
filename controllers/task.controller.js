@@ -1,5 +1,5 @@
-import factory from './handlerFactory.js';
-import Task from '../models/taskModel.js';
+import factory from './handler.factory.js';
+import Task from '../models/task.model.js';
 
 export default {
   createTask: factory.createOne(Task),
