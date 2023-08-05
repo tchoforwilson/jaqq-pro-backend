@@ -1,4 +1,3 @@
-'use strict';
 import multer from 'multer';
 import sharp from 'sharp';
 import AppError from '../utilities/appError.js';
@@ -37,13 +36,16 @@ const upload = multer({
 export const uploadPhoto = upload.single('photo');
 
 /**
- * @breif Method to resize member photo, convert image to "jpeg and increase quality"
+ * @breif Method to resize user photo, convert image to "jpeg and increase quality"
  */
 export const resizePhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
 
-  // Stored member image name string member-memberId-currentDate.jpeg
-  req.file.filename = `member-${req.member.id}-${Date.now()}.jpeg`;
+  // Stored user image name string user-userId-currentDate.jpeg
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  // Assign image name to body
+  req.body.photo = req.file.filename;
 
   await sharp(req.file.buffer)
     .resize(500, 500)
