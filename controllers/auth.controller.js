@@ -8,6 +8,7 @@ import sendMessage from '../utilities/sms.js';
 import AppError from '../utilities/appError.js';
 import catchAsync from '../utilities/catchAsync.js';
 import config from '../configurations/config.js';
+import eStatusCode from '../utilities/enums/e.status-code.js';
 import { filterObj } from '../utilities/utils.js';
 
 /**
@@ -52,40 +53,40 @@ const createSendToken = (user, statusCode, req, res) => {
 /**
  * @breif Generate and send user phone authentication sms
  * @param {Object} user -> Current user to which sms code is sent to phone
- * @returns {Function}
+ * @returns {void}
  */
-const generateAndSendSMSCode = (user) =>
-  catchAsync(async (req, res, next) => {
-    // 1. Generate random sms code
-    let code = Randomstring.generate({
-      length: 5,
-      charset: 'numeric',
-    });
-    let codeExpires = new Date(Date.now() + 20 * 60 * 1000);
-
-    // 2. Build message
-    const message = `Your Jaqq authentication code is ${code}.\nSubmit this code to verify your phone number`;
-
-    // 3. Send message to user
-    try {
-      await sendMessage(message, user.phone);
-    } catch (err) {
-      // 4. Reset values if error in sending sms
-      code = null;
-      codeExpires = null;
-      return next(
-        new AppError('Invalid phone or unable to validate phone number', 500)
-      );
-    }
-
-    // 5. Save generated code and expiry date
-    await User.findByIdAndUpdate(user.id, {
-      lastVerificationSMSCode: code,
-      smsCodeExpiresAt: codeExpires,
-    }); // ? Look for a better way to save this
-
-    next();
+const generateAndSendSMSCode = async (user) => {
+  // 1. Generate random sms code
+  let code = Randomstring.generate({
+    length: 5,
+    charset: 'numeric',
   });
+  let codeExpires = new Date(Date.now() + 20 * 60 * 1000);
+
+  // 2. Build message
+  const message = `Your Jaqq authentication code is ${code}.\nSubmit this code to verify your phone number`;
+
+  // 3. Send message to user
+  try {
+    await sendMessage(message, user.phone);
+  } catch (err) {
+    // 4. Reset values if error in sending sms
+    code = null;
+    codeExpires = null;
+    return next(
+      new AppError(
+        'Invalid phone number or unable to send message',
+        eStatusCode.SERVER_ERROR
+      )
+    );
+  }
+
+  // 5. Save generated code and expiry date
+  await User.findByIdAndUpdate(user._id, {
+    lastVerificationSMSCode: code,
+    smsCodeExpiresAt: codeExpires,
+  }); // ? Look for a better way to save this
+};
 
 /**
  * @breif Resend user verification code
@@ -98,16 +99,16 @@ const resendSMSCode = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         'Invalid request, your are phone number is already authenticated',
-        400
+        eStatusCode.BAD_REQUEST
       )
     );
   }
 
   // 2. Generate and send code
-  await generateAndSendSMSCode(req.user);
+  generateAndSendSMSCode(req.user);
 
   // 3. Send response
-  res.status(200).json({ status: 'success', data: null });
+  res.status(eStatusCode.SUCCESS).json({ status: 'success', data: null });
 });
 
 /**
@@ -137,10 +138,10 @@ const register = catchAsync(async (req, res, next) => {
   const newUser = await User.create(filteredBody);
 
   // 3. Generate and send verification sms
-  await generateAndSendSMSCode(newUser);
+  generateAndSendSMSCode(newUser);
 
   // 4. Send response
-  createSendToken(newUser, 201, req, res);
+  createSendToken(newUser, eStatusCode.CREATED, req, res);
 });
 
 /**
@@ -155,7 +156,10 @@ const login = catchAsync(async (req, res, next) => {
   // 1) Check if contact and password exist
   if (!email || !password) {
     return next(
-      new AppError('Please provide email or phone number and password!', 400)
+      new AppError(
+        'Please provide email or phone number and password!',
+        eStatusCode.BAD_REQUEST
+      )
     );
   }
 
@@ -173,40 +177,46 @@ const login = catchAsync(async (req, res, next) => {
   }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError('Incorrect email or contact or password', 401));
+    return next(
+      new AppError(
+        'Incorrect email or contact or password',
+        eStatusCode.FORBIDDEN
+      )
+    );
   }
 
   // 3) If everything ok, send token to client
-  createSendToken(user, 200, req, res);
+  createSendToken(user, eStatusCode.SUCCESS, req, res);
 });
 
 const verifyMe = catchAsync(async (req, res, next) => {
   // 1. Get code
   const { code } = req.body;
   if (!code) {
-    return next(new AppError('Please provide code', 400));
+    return next(new AppError('Please provide code', eStatusCode.BAD_REQUEST));
   }
   // 2. Get user
   const user = await User.findById(req.user.id);
 
   // 3. Verify if code has expire
   if (Date.now() > user.smsCodeExpiresAt) {
-    return next(new AppError('Your code has expired', 400));
+    return next(new AppError('Your code has expired', eStatusCode.BAD_REQUEST));
   }
 
   // 4. Check if code matches
   if (!user.correctSMSCode(code, user.lastVerificationSMSCode)) {
-    return next(new AppError('Codes did not match', 401));
+    return next(new AppError('Codes did not match', eStatusCode.FORBIDDEN));
   }
   // 4. Update user verification status to true
   user.lastVerificationSMSCode = undefined;
   user.smsCodeExpiresAt = undefined;
   user.phoneValidated = true;
-  await user.save();
+  await user.save({ validateBeforeSave: false });
 
   // 5. Send response
-  res.status(200).json({
+  res.status(eStatusCode.SUCCESS).json({
     status: 'success',
+    message: 'Your phone number is verified',
     data: null,
   });
 });
@@ -230,7 +240,10 @@ const protect = catchAsync(async (req, res, next) => {
 
   if (!token) {
     return next(
-      new AppError('You are not logged in! Please log in to get access.', 401)
+      new AppError(
+        'You are not logged in! Please log in to get access.',
+        eStatusCode.FORBIDDEN
+      )
     );
   }
 
@@ -244,7 +257,7 @@ const protect = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         'The user belonging to this token does no longer exist.',
-        401
+        eStatusCode.FORBIDDEN
       )
     );
   }
@@ -252,7 +265,10 @@ const protect = catchAsync(async (req, res, next) => {
   // 4) Check if user changed password after the token was issued
   if (currentuser.changedPasswordAfter(decoded.iat)) {
     return next(
-      new AppError('User recently changed password! Please log in again.', 401)
+      new AppError(
+        'User recently changed password! Please log in again.',
+        eStatusCode.FORBIDDEN
+      )
     );
   }
 
@@ -272,7 +288,10 @@ const restrictTo = (...roles) => {
     // roles ['admin', 'user','provider']. role='user'
     if (!roles.includes(req.user.role)) {
       return next(
-        new AppError('You do not have permission to perform this action', 403)
+        new AppError(
+          'You do not have permission to perform this action',
+          eStatusCode.UN_AUTHORIZED
+        )
       );
     }
 
@@ -289,7 +308,7 @@ const restrictToVerified = (req, res, next) => {
     return next(
       new AppError(
         'Your are not allowed to performed this action, please authenticate your contact /verifyMe',
-        403
+        eStatusCode.UN_AUTHORIZED
       )
     );
   }
@@ -315,7 +334,7 @@ const updatePhone = catchAsync(async (req, res, next) => {
   generateAndSendSMSCode(updatedUser);
 
   // 3. Send response
-  res.status(200).json({
+  res.status(eStatusCode.SUCCESS).json({
     status: 'success',
     data: updatedUser,
   });
@@ -331,7 +350,9 @@ const updatePassword = catchAsync(async (req, res, next) => {
 
   // 2) Check if POSTed current password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
-    return next(new AppError('Your current password is wrong.', 401));
+    return next(
+      new AppError('Your current password is wrong.', eStatusCode.FORBIDDEN)
+    );
   }
 
   // 3) If so, update password
@@ -341,7 +362,7 @@ const updatePassword = catchAsync(async (req, res, next) => {
   // user.findByIdAndUpdate will NOT work as intended!
 
   // 4) Log user in, send JWT
-  createSendToken(user, 200, req, res);
+  createSendToken(user, eStatusCode.SUCCESS, req, res);
 });
 
 export default {
