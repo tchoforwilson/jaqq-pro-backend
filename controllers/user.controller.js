@@ -4,6 +4,7 @@ import factory from './handler.factory.js';
 import AppError from '../utilities/appError.js';
 import catchAsync from '../utilities/catchAsync.js';
 import { filterObj } from '../utilities/utils.js';
+import eStatusCode from '../utilities/enums/e.status-code.js';
 
 /**
  * @bref Set parameter id in getting current user
@@ -22,13 +23,19 @@ const updateMe = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         'This route is not for password updates. Please use /updateMyPassword.',
-        400
+        eStatusCode.BAD_REQUEST
       )
     );
   }
 
   // 2) Filtered out unwanted fields names that are not allowed to be updated
-  const filteredBody = filterObj(req.body, 'username', 'email');
+  const filteredBody = filterObj(
+    req.body,
+    'firstName',
+    'lastName',
+    'birthday',
+    'email'
+  );
 
   // 3) Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
@@ -36,7 +43,7 @@ const updateMe = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-  res.status(200).json({
+  res.status(eStatusCode.SUCCESS).json({
     status: 'success',
     message: 'data updated!',
     data: {
@@ -55,14 +62,14 @@ const deleteMe = catchAsync(async (req, res, next) => {
   });
 
   // 2. Send response
-  res.status(204).json({
+  res.status(eStatusCode.NO_CONTENT).json({
     status: 'success',
     data: null,
   });
 });
 
 const createUser = (req, res) => {
-  res.status(500).json({
+  res.status(eStatusCode.SERVER_ERROR).json({
     status: 'error',
     message: 'This route is not defined! Please use /signup instead',
   });
