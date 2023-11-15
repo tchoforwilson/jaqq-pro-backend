@@ -60,7 +60,7 @@ const generateAndSendSMSCode = async (user, req, res) => {
     length: SMS_LENGTH,
     charset: "numeric",
   });
-  let codeExpires = new Date(Date.now() + 20 * 60 * 1000);
+  let codeExpires = new Date(Date.now() + 20 * 60 * 1000); // Code expires in 20 minutes
 
   // 2. Build message
   const message = `Your Jaqq authentication code is ${code}.\nSubmit this code to verify your phone number`;
@@ -84,7 +84,7 @@ const generateAndSendSMSCode = async (user, req, res) => {
   const newUser = await User.findByIdAndUpdate(user._id, {
     lastVerificationSMSCode: code,
     smsCodeExpiresAt: codeExpires,
-  }); // ? Look for a better way to save this
+  });
 
   // 6. Send response
   res
@@ -143,16 +143,20 @@ const registerPhone = catchAsync(async (req, res, next) => {
 
   if (user) {
     return next(
-      new AppError("User with phone already exists", eStatusCode.BAD_REQUEST)
+      new AppError(
+        "User with phone number already exists",
+        eStatusCode.BAD_REQUEST
+      )
     );
   }
 
   // 2. Update user with phone number
-  user.phone = req.body.phone;
-  await user.save({ validateBeforeSave: false });
+  const newUser = User.findByIdAndUpdate(req.user.id, {
+    phone: req.body.phone,
+  });
 
   // 3. Generate and send sms code
-  generateAndSendSMSCode(user);
+  generateAndSendSMSCode(newUser, req, res);
 });
 
 /**
@@ -168,7 +172,7 @@ const login = catchAsync(async (req, res, next) => {
   if (!email || !password) {
     return next(
       new AppError(
-        "Please provide email or phone number and password!",
+        "Please provide email and password!",
         eStatusCode.BAD_REQUEST
       )
     );
@@ -198,12 +202,12 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
 
   // 3. Verify if code has expire
   if (Date.now() > user.smsCodeExpiresAt) {
-    return next(new AppError("Your code has expired", eStatusCode.BAD_REQUEST));
+    return next(new AppError("Your code has expire!", eStatusCode.BAD_REQUEST));
   }
 
   // 4. Check if code matches
   if (!user.correctSMSCode(code, user.lastVerificationSMSCode)) {
-    return next(new AppError("Codes did not match", eStatusCode.FORBIDDEN));
+    return next(new AppError("Code did not match", eStatusCode.FORBIDDEN));
   }
   // 4. Update user verification status to true
   user.lastVerificationSMSCode = undefined;
@@ -329,7 +333,7 @@ const updatePhone = catchAsync(async (req, res, next) => {
   );
 
   // 2. Generate and send contact verification code
-  generateAndSendSMSCode(updatedUser);
+  generateAndSendSMSCode(updatedUser, req, res);
 });
 
 /**
