@@ -34,30 +34,16 @@ const userSchema = new Schema(
       required: [true, "Please tell us your date of birth!"],
     },
     photo: String,
-    emailValidated: {
-      type: Boolean,
-      default: false,
-    },
     phoneValidated: {
       type: Boolean,
       default: false,
     },
-    lastVerificationEmailCode: Number,
     lastVerificationSMSCode: Number,
-    emailCodeExpiresAt: Date,
     smsCodeExpiresAt: Date,
     device: { type: String },
-    verified: {
-      type: Boolean,
-      default: false,
-    },
     active: {
       type: Boolean,
       default: true,
-    },
-    reports: {
-      type: Number,
-      default: 0,
     },
     password: {
       type: String,
