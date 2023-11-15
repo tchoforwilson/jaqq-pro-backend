@@ -6,9 +6,6 @@ import eUserRole from "../utilities/enums/e.user-role.js";
 
 const router = Router();
 
-router.post("/register", authController.register);
-router.post("/login", authController.login);
-
 // Protect all routes after this middleware
 router.use(authController.protect);
 
