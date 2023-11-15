@@ -14,7 +14,7 @@ router.patch("/updatePhone", authController.updatePhone);
 router.get("/profile", userController.getMe, userController.getUser);
 router.patch("/editProfile", uploadPhoto, resizePhoto, userController.updateMe);
 router.delete("/deleteProfile", userController.deleteMe);
-router.post("/verifyMe", authController.verifyMe);
+router.post("/verifySMSCode", authController.verifySMSCode);
 router.get("/resendCode", authController.resendSMSCode);
 
 router.use(authController.restrictTo(eUserRole.ADMIN));
