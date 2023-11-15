@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
-dotenv.config({ path: './config.env' });
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env.development" });
 
 /**
  * @breif Configuration object to hold all environmental variables
@@ -11,7 +11,7 @@ const config = {
    */
   env: process.env.NODE_ENV,
   port: process.env.PORT || 9000,
-  prefix: process.env.API_PREFIX || '/api/v1',
+  prefix: process.env.API_PREFIX || "/api",
   cameroon_country_code: process.env.CAMEROON_COUNTRY_CODE,
   /**
    * @breif Database for various environments
