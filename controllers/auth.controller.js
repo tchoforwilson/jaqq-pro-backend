@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import { promisify } from "util";
 import Randomstring from "randomstring";
-import moment from "moment";
 
 import User from "../models/user.model.js";
 import sendMessage from "../utilities/sms.js";
@@ -9,8 +8,7 @@ import AppError from "../utilities/appError.js";
 import catchAsync from "../utilities/catchAsync.js";
 import config from "../configurations/config.js";
 import eStatusCode from "../utilities/enums/e.status-code.js";
-import { filterObj } from "../utilities/utils.js";
-import { SMS_LENGTH } from "../utilities/constants";
+import { SMS_LENGTH } from "../utilities/constants/index.js";
 
 /**
  * @breif Generate user jwt token from user object
@@ -83,7 +81,7 @@ const generateAndSendSMSCode = async (user, req, res) => {
   }
 
   // 5. Save generated code and expiry date
-  const user = await User.findByIdAndUpdate(user._id, {
+  const newUser = await User.findByIdAndUpdate(user._id, {
     lastVerificationSMSCode: code,
     smsCodeExpiresAt: codeExpires,
   }); // ? Look for a better way to save this
@@ -91,7 +89,7 @@ const generateAndSendSMSCode = async (user, req, res) => {
   // 6. Send response
   res
     .status(eStatusCode.SUCCESS)
-    .json({ status: "success", message: "sms sent!", data: user });
+    .json({ status: "success", message: "sms sent!", data: newUser });
 };
 
 /**
