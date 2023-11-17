@@ -1,6 +1,6 @@
-import APIFeatures from '../utilities/apiFeatures.js';
-import AppError from '../utilities/appError.js';
-import catchAsync from '../utilities/catchAsync.js';
+import APIFeatures from "../utilities/apiFeatures.js";
+import AppError from "../utilities/appError.js";
+import catchAsync from "../utilities/catchAsync.js";
 
 /**
  * @breif Create a new document in a database collection
@@ -12,7 +12,7 @@ const createOne = (Model) =>
     const doc = await Model.create(req.body);
 
     res.status(eStatusCode.CREATED).json({
-      status: 'success',
+      status: "success",
       data: doc,
     });
   });
@@ -34,11 +34,11 @@ const getOne = (Model, popOptions) =>
 
     if (!doc)
       return next(
-        new AppError('document not found with that ID!', eStatusCode.NOT_FOUND)
+        new AppError("No document found with that ID!", eStatusCode.NOT_FOUND)
       );
 
     res.status(eStatusCode.SUCCESS).json({
-      status: 'success',
+      status: "success",
       data: doc,
     });
   });
@@ -58,11 +58,11 @@ const updateOne = (Model) =>
 
     if (!doc)
       return next(
-        new AppError('No document found with that ID!', eStatusCode.NOT_FOUND)
+        new AppError("No document found with that ID!", eStatusCode.NOT_FOUND)
       );
 
     res.status(eStatusCode.SUCCESS).json({
-      status: 'success',
+      status: "success",
       data: doc,
     });
   });
@@ -91,7 +91,7 @@ const getAll = (Model) =>
 
     // SEND RESPONSE
     res.status(eStatusCode.SUCCESS).json({
-      status: 'success',
+      status: "success",
       results: docs.length,
       data: {
         data: docs,
@@ -110,12 +110,12 @@ const deleteOne = (Model) =>
 
     if (!doc) {
       return next(
-        new AppError('No document found with that ID', eStatusCode.NOT_FOUND)
+        new AppError("No document found with that ID", eStatusCode.NOT_FOUND)
       );
     }
 
     res.status(204).json({
-      status: 'success',
+      status: "success",
       data: null,
     });
   });
