@@ -1,16 +1,16 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 const taskSchema = new Schema(
   {
     label: {
       type: String,
-      required: [true, 'Tasks must have a label'],
+      required: [true, "Tasks must have a label"],
     },
     providers: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'Task must have a service provider'],
+        ref: "User",
+        required: [true, "Task must have a service provider"],
       },
     ],
   },
@@ -18,12 +18,12 @@ const taskSchema = new Schema(
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
     timestamps: {
-      createdAt: 'createdAt',
-      updatedAt: 'updatedAt',
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
     },
   }
 );
 
-const Task = model('Task', taskSchema);
+const Task = model("Task", taskSchema);
 
 export default Task;
