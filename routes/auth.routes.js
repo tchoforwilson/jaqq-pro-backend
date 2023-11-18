@@ -7,10 +7,22 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 
 router.use(authController.protect);
-
-router.patch("/update-my-password", authController.updatePassword);
-router.patch("/update-my-phone", authController.updatePhone);
+router.post(
+  "/register-phone",
+  authController.checkPhoneNumber,
+  authController.registerPhone
+);
+router.post(
+  "/resend-sms-code",
+  authController.checkPhoneNumber,
+  authController.resendSMSCode
+);
 router.post("/verify-sms-code", authController.verifySMSCode);
-router.get("/resend-sms-code", authController.resendSMSCode);
+router.patch(
+  "/update-my-phone",
+  authController.checkPhoneNumber,
+  authController.updatePhone
+);
+router.patch("/update-my-password", authController.updatePassword);
 
 export default router;
