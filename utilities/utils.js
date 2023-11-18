@@ -11,18 +11,3 @@ export const filterObj = (obj, ...allowedFields) => {
   });
   return newObj;
 };
-
-/**
- * @breif A pretty old plugin to reload database schema
- * document record. This method reload the document so that
- * the fields have the values assigned to the document.
- * @param {Schema} schema -> document schema
- * @return {Object}
- */
-export const reloadRecord = (schema) => {
-  schema.methods.reload = async function () {
-    const record = await this.constructor.findById(this);
-    Object.assign(this, record);
-    return record;
-  };
-};
