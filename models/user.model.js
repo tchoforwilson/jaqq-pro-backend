@@ -21,17 +21,13 @@ const userSchema = new Schema(
     },
     phone: {
       type: String,
-      required: [true, "Please provide your phone number"],
+      // required: [true, "Please provide your phone number"], TODO: check this out
       maxlength: [13, "A phone number must be 13 digits"],
       unique: true,
-      validate: [
-        validator.isMobilePhone,
-        "Please provide a valid phone number",
-      ],
     },
     birthday: {
       type: Date,
-      required: [true, "Please tell us your date of birth!"],
+      // required: [true, "Please tell us your date of birth!"], TODO: Check this out
     },
     photo: String,
     phoneValidated: {
