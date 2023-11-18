@@ -1,6 +1,7 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { Schema, model } from "mongoose";
+import eUserRole from "../utilities/enums/e.user-role.js";
 
 const userSchema = new Schema(
   {
@@ -33,6 +34,11 @@ const userSchema = new Schema(
     phoneValidated: {
       type: Boolean,
       default: false,
+    },
+    role: {
+      type: String,
+      enum: [...Object.values(eUserRole)],
+      default: eUserRole.USER,
     },
     lastVerificationSMSCode: Number,
     smsCodeExpiresAt: Date,
