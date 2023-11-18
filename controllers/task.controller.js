@@ -20,4 +20,6 @@ export default {
   getAllTasks: factory.getAll(Task),
   updateTask: factory.updateOne(Task),
   deleteTask: factory.deleteOne(Task),
+  countTasks: factory.count(Task),
+  searchTask: factory.search(Task),
 };

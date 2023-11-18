@@ -1,10 +1,10 @@
-import User from '../models/user.model.js';
+import User from "../models/user.model.js";
 
-import factory from './handler.factory.js';
-import AppError from '../utilities/appError.js';
-import catchAsync from '../utilities/catchAsync.js';
-import { filterObj } from '../utilities/utils.js';
-import eStatusCode from '../utilities/enums/e.status-code.js';
+import factory from "./handler.factory.js";
+import AppError from "../utilities/appError.js";
+import catchAsync from "../utilities/catchAsync.js";
+import { filterObj } from "../utilities/utils.js";
+import eStatusCode from "../utilities/enums/e.status-code.js";
 
 /**
  * @bref Set parameter id in getting current user
@@ -22,7 +22,7 @@ const updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
-        'This route is not for password updates. Please use /updateMyPassword.',
+        "This route is not for password updates. Please use /updateMyPassword.",
         eStatusCode.BAD_REQUEST
       )
     );
@@ -31,10 +31,10 @@ const updateMe = catchAsync(async (req, res, next) => {
   // 2) Filtered out unwanted fields names that are not allowed to be updated
   const filteredBody = filterObj(
     req.body,
-    'firstName',
-    'lastName',
-    'birthday',
-    'email'
+    "firstName",
+    "lastName",
+    "birthday",
+    "email"
   );
 
   // 3) Update user document
@@ -44,8 +44,8 @@ const updateMe = catchAsync(async (req, res, next) => {
   });
 
   res.status(eStatusCode.SUCCESS).json({
-    status: 'success',
-    message: 'data updated!',
+    status: "success",
+    message: "data updated!",
     data: {
       user: updatedUser,
     },
@@ -63,15 +63,15 @@ const deleteMe = catchAsync(async (req, res, next) => {
 
   // 2. Send response
   res.status(eStatusCode.NO_CONTENT).json({
-    status: 'success',
+    status: "success",
     data: null,
   });
 });
 
 const createUser = (req, res) => {
   res.status(eStatusCode.SERVER_ERROR).json({
-    status: 'error',
-    message: 'This route is not defined! Please use /signup instead',
+    status: "error",
+    message: "This route is not defined! Please use /signup instead",
   });
 };
 
@@ -81,6 +81,8 @@ const getAllUsers = factory.getAll(User);
 // Do NOT update passwords with this!
 const updateUser = factory.updateOne(User);
 const deleteUser = factory.deleteOne(User);
+const countUsers = factory.count(User);
+const searchUser = factory.search(User);
 
 export default {
   getMe,
@@ -91,4 +93,6 @@ export default {
   getAllUsers,
   updateUser,
   deleteUser,
+  countUsers,
+  searchUser,
 };

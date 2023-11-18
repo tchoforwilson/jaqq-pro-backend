@@ -1,5 +1,5 @@
-import Pricing from '../models/pricing.model.js';
-import factory from './handler.factory.js';
+import Pricing from "../models/pricing.model.js";
+import factory from "./handler.factory.js";
 
 export default {
   setProviderTaskIds: (req, res, next) => {
@@ -10,8 +10,9 @@ export default {
   },
 
   createPricing: factory.createOne(Pricing),
-  getPricing: factory.getOne(Pricing, { path: 'Task' }),
+  getPricing: factory.getOne(Pricing, { path: "Task" }),
   getAllPricings: factory.getAll(Pricing),
   updatePricing: factory.updateOne(Pricing),
   deletePricing: factory.deleteOne(Pricing),
+  countPricing: factory.count(Pricing),
 };
