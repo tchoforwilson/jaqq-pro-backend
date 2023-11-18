@@ -3,7 +3,7 @@ import { promisify } from "util";
 import Randomstring from "randomstring";
 
 import User from "../models/user.model.js";
-import sendMessage from "../utilities/sms.js";
+import sendMessage from "../services/sms.js";
 import AppError from "../utilities/appError.js";
 import catchAsync from "../utilities/catchAsync.js";
 import config from "../configurations/config.js";
@@ -50,11 +50,32 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 /**
+ * @breif Check user provided phone number is valid and cameroonian
+ * @param {String} phoneNumer Phone Number
+ * @returns
+ */
+export const checkPhoneNumber = (req, res, next) => {
+  const phoneNumber = req.body.phone;
+  const cameroonPhoneRegex = /^6(?:[578]\d|5[0-4])\d{6}$/;
+  if (phoneNumber.startsWith("+237") && phoneNumber.length === 13) {
+    // If the string starts with +237, do nothing
+    next();
+  } else if (phoneNumber.length === 9 && cameroonPhoneRegex.test(phoneNumber)) {
+    // If the string doesn't start with +237 and has 9 characters, attach +237 to the beginning
+    req.body.phone = "+237" + req.body.phone;
+    next();
+  } else {
+    // If the string doesn't meet the above conditions, send an error message
+    next(new AppError("Invalid phone number!", eStatusCode.BAD_REQUEST));
+  }
+};
+
+/**
  * @breif Generate and send user phone authentication sms
  * @param {Object} user -> Current user to which sms code is sent to phone
  * @returns {void}
  */
-const generateAndSendSMSCode = async (user, req, res) => {
+const generateAndSendSMSCode = catchAsync(async (req, res, next) => {
   // 1. Generate random sms code
   let code = Randomstring.generate({
     length: SMS_LENGTH,
@@ -67,7 +88,7 @@ const generateAndSendSMSCode = async (user, req, res) => {
 
   // 3. Send message to user
   try {
-    await sendMessage(message, user.phone);
+    await sendMessage(message, req.body.phone);
   } catch (err) {
     // 4. Reset values if error in sending sms
     code = null;
@@ -81,16 +102,21 @@ const generateAndSendSMSCode = async (user, req, res) => {
   }
 
   // 5. Save generated code and expiry date
-  const newUser = await User.findByIdAndUpdate(user._id, {
+  const user = await User.findByIdAndUpdate(req.user.id, {
+    phone: req.body.phone,
     lastVerificationSMSCode: code,
     smsCodeExpiresAt: codeExpires,
   });
 
-  // 6. Send response
+  // 6.Remove code and date expires from output
+  user.lastVerificationSMSCode = undefined;
+  user.smsCodeExpiresAt = undefined;
+
+  // 7. Send response
   res
     .status(eStatusCode.SUCCESS)
-    .json({ status: "success", message: "sms sent!", data: newUser });
-};
+    .json({ status: "success", message: "sms sent!", data: user });
+});
 
 /**
  * @breif Resend user verification code
@@ -109,7 +135,7 @@ const resendSMSCode = catchAsync(async (req, res, next) => {
   }
 
   // 2. Generate and send code
-  generateAndSendSMSCode(req.user, req, res);
+  generateAndSendSMSCode(req, res, next);
 });
 
 /**
@@ -137,8 +163,18 @@ const register = catchAsync(async (req, res, next) => {
   createSendToken(newUser, eStatusCode.CREATED, req, res);
 });
 
+/**
+ * @breif Register user phone number
+ */
 const registerPhone = catchAsync(async (req, res, next) => {
-  // 1.Check if phone is already registered
+  // 1. Check if phone number if available
+  if (!req.body.phone) {
+    return next(
+      new AppError("Please provide a phone number!", eStatusCode.BAD_REQUEST)
+    );
+  }
+
+  // 2.Check if phone is already registered
   const user = await User.findOne({ phone: req.body.phone });
 
   if (user) {
@@ -150,13 +186,8 @@ const registerPhone = catchAsync(async (req, res, next) => {
     );
   }
 
-  // 2. Update user with phone number
-  const newUser = User.findByIdAndUpdate(req.user.id, {
-    phone: req.body.phone,
-  });
-
   // 3. Generate and send sms code
-  generateAndSendSMSCode(newUser, req, res);
+  generateAndSendSMSCode(req, res, next);
 });
 
 /**
@@ -204,6 +235,7 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
   if (Date.now() > user.smsCodeExpiresAt) {
     return next(new AppError("Your code has expire!", eStatusCode.BAD_REQUEST));
   }
+  console.log(code + ":" + user.lastVerificationSMSCode);
 
   // 4. Check if code matches
   if (!user.correctSMSCode(code, user.lastVerificationSMSCode)) {
@@ -219,7 +251,7 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
   res.status(eStatusCode.SUCCESS).json({
     status: "success",
     message: "Your phone number is verified",
-    data: null,
+    data: user,
   });
 });
 
@@ -333,7 +365,7 @@ const updatePhone = catchAsync(async (req, res, next) => {
   );
 
   // 2. Generate and send contact verification code
-  generateAndSendSMSCode(updatedUser, req, res);
+  generateAndSendSMSCode(req, res, next);
 });
 
 /**
@@ -362,9 +394,10 @@ const updatePassword = catchAsync(async (req, res, next) => {
 });
 
 export default {
-  resendSMSCode,
   register,
   registerPhone,
+  resendSMSCode,
+  checkPhoneNumber,
   login,
   verifySMSCode,
   protect,
