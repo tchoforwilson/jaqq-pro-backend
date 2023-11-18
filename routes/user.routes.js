@@ -13,6 +13,9 @@ router.use(authController.protect);
 // Fetching and creating provider tasks
 router.use("/:userId/taks", taskRouter);
 
+router.route("/search", userController.searchUser);
+router.route("/count", userController.countUsers);
+
 // User routes
 router.get("/me", userController.getMe, userController.getUser);
 router.patch("/update-me", uploadPhoto, resizePhoto, userController.updateMe);

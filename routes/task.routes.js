@@ -10,6 +10,9 @@ router.use(authController.protect);
 
 router.use("/:taskId/pricings", pricingRouter);
 
+router.get("/search", taskController.searchTask);
+router.get("/count", taskController.countTasks);
+
 router
   .route("/")
   .get(taskController.getAllTasks)
