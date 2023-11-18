@@ -20,6 +20,8 @@ const config = {
     dev: process.env.DATABASE_DEV,
     test: process.env.DATABASE_TEST,
     prod: process.env.DATABASE_PROD,
+    password: process.env.DATABASE_PASSWORD,
+    user: process.env.DATABASE_USER,
   },
   /**
    * @breif JWT important variables
