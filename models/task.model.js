@@ -6,13 +6,16 @@ const taskSchema = new Schema(
       type: String,
       required: [true, "Tasks must have a label"],
     },
-    providers: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: [true, "Task must have a service provider"],
-      },
-    ],
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Task must belong to a user"],
+    },
+    provider: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Task must have a service provider"],
+    },
   },
   {
     toJSON: { virtuals: true },
