@@ -11,6 +11,7 @@ import AppError from "./utilities/appError.js";
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import taskRouter from "./routes/task.routes.js";
+import serviceRouter from "./routes/service.routes.js";
 import pricingRouter from "./routes/pricing.routes.js";
 
 // Start express app
@@ -44,6 +45,7 @@ app.use((req, res, next) => {
 app.use(`${config.prefix}/auth`, authRouter);
 app.use(`${config.prefix}/users`, userRouter);
 app.use(`${config.prefix}/tasks`, taskRouter);
+app.use(`${config.prefix}/services`, serviceRouter);
 app.use(`${config.prefix}/pricings`, pricingRouter);
 
 // INVALID ROUTES
