@@ -47,6 +47,20 @@ const userSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    status: {
+      type: String,
+      enum: ["online", "offline"],
+      default: "online",
+    },
+    location: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+    },
     password: {
       type: String,
       required: [true, "Please provide a password!"],
@@ -71,6 +85,8 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ location: "2dsphere" });
 
 /**
  * @breif middleware to hash user password before save
