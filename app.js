@@ -4,18 +4,24 @@ import morgan from "morgan";
 import path from "path";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
+import http from "http";
+import { Server } from "socket.io";
 
 import config from "./configurations/config.js";
 import globalErrorHandler from "./controllers/error.controller.js";
 import AppError from "./utilities/appError.js";
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
-import taskRouter from "./routes/task.routes.js";
+// import taskRouter from "./routes/task.routes.js";
 import serviceRouter from "./routes/service.routes.js";
 import pricingRouter from "./routes/pricing.routes.js";
 
 // Start express app
 const app = express();
+
+// Define server
+const server = http.createServer(app);
+const io = new Server(server);
 
 // GLOBAL MIDDLEWARES
 // Set security HTTP headers
@@ -44,9 +50,19 @@ app.use((req, res, next) => {
 // ROUTES
 app.use(`${config.prefix}/auth`, authRouter);
 app.use(`${config.prefix}/users`, userRouter);
-app.use(`${config.prefix}/tasks`, taskRouter);
+// app.use(`${config.prefix}/tasks`, taskRouter);
 app.use(`${config.prefix}/services`, serviceRouter);
 app.use(`${config.prefix}/pricings`, pricingRouter);
+
+// Socket Connections
+io.on("connection", (socket) => {
+  console.log("Connection established", socket.id);
+  socket.broadcast.emit("hello", "world");
+  socket.on("create", (data) => {
+    console.log(data);
+    socket.broadcast.emit("created", "Welcome"); // send the created event back to the client that initiated the "create" event
+  });
+});
 
 // INVALID ROUTES
 app.all("*", (req, res, next) => {
@@ -56,4 +72,4 @@ app.all("*", (req, res, next) => {
 // GLOBAL ERROR HANDLER
 app.use(globalErrorHandler);
 
-export default app;
+export default server;
