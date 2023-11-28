@@ -1,7 +1,7 @@
 import { Router } from "express";
 import authController from "../controllers/auth.controller.js";
 import userController from "../controllers/user.controller.js";
-import taskRouter from "./task.routes.js";
+// import taskRouter from "./task.routes.js";
 import { uploadPhoto, resizePhoto } from "../utilities/imageUpload.js";
 import eUserRole from "../utilities/enums/e.user-role.js";
 
@@ -11,7 +11,7 @@ const router = Router();
 router.use(authController.protect);
 
 // Fetching and creating provider tasks
-router.use("/:userId/taks", taskRouter);
+// router.use("/:userId/taks", taskRouter);
 
 router.route("/search", userController.searchUser);
 router.route("/count", userController.countUsers);
