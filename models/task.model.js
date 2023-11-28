@@ -1,20 +1,46 @@
 import { Schema, model } from "mongoose";
+import eTaskStatus from "../utilities/enums/e.task-status.js";
 
 const taskSchema = new Schema(
   {
-    label: {
-      type: String,
-      required: [true, "Tasks must have a label"],
+    services: {
+      type: Schema.Types.ObjectId,
+      ref: "Service",
+      required: [true, "Service required"],
     },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Task must belong to a user"],
     },
-    provider: {
+    assignee: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Task must have a service provider"],
+    },
+    status: {
+      type: String,
+      enum: [...Object.values(eTaskStatus)],
+      default: eTaskStatus.PENDING,
+    },
+    location: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+    },
+    pricing: {
+      minPrice: {
+        type: Number,
+        required: [true, "Minimum price required"],
+      },
+      maxPrice: {
+        type: Number,
+        required: [true, "Maximum price required"],
+      },
     },
   },
   {
