@@ -2,10 +2,12 @@ import { Schema, model } from "mongoose";
 
 const servicesSchema = new Schema(
   {
-    name: {
+    label: {
       type: String,
       required: [true, "Service must have a name!"],
     },
+    numOfProviders: Number,
+    numOfTasks: Number,
   },
   {
     toJSON: { virtuals: true },
