@@ -40,18 +40,14 @@ const userSchema = new Schema(
       enum: [...Object.values(eUserRole)],
       default: eUserRole.USER,
     },
+    services: [{ type: Schema.Types.ObjectId, ref: "Service" }],
     lastVerificationSMSCode: Number,
     smsCodeExpiresAt: Date,
-    device: { type: String },
     active: {
       type: Boolean,
       default: true,
     },
-    status: {
-      type: String,
-      enum: ["online", "offline"],
-      default: "online",
-    },
+    online: { type: Boolean, default: true },
     location: {
       // GeoJSON
       type: {
