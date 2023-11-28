@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authController from "../controllers/auth.controller.js";
 import serviceController from "../controllers/service.controller.js";
+import eUserRole from "../utilities/enums/e.user-role.js";
 
 const router = Router();
 
@@ -9,12 +10,21 @@ router.use(authController.protect, authController.restrictToVerified);
 router
   .route("/")
   .get(serviceController.getAllServices)
-  .post(serviceController.createService);
+  .post(
+    authController.restrictTo(eUserRole.ADMIN),
+    serviceController.createService
+  );
 
 router
   .route("/:id")
-  .patch(serviceController.updateService)
+  .patch(
+    authController.restrictTo(eUserRole.ADMIN),
+    serviceController.updateService
+  )
   .get(serviceController.getService)
-  .delete(serviceController.deleteService);
+  .delete(
+    authController.restrictTo(eUserRole.ADMIN),
+    serviceController.deleteService
+  );
 
 export default router;
