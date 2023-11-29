@@ -1,3 +1,14 @@
+import taskController from "../controllers/task.controller.js";
+//import eUserRole from "../utilities/enums/e.user-role.js";
+
+const router = (socket) => {
+  //socket.use(taskController.protect);
+  socket.on("task:create", taskController.createTask);
+  socket.on("task:getAll", taskController.getAllTasks);
+};
+
+export default router;
+
 // import { Router } from "express";
 // import pricingRouter from "./pricing.routes.js";
 // import authController from "../controllers/auth.controller.js";
