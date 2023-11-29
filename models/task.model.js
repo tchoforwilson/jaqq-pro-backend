@@ -3,7 +3,7 @@ import eTaskStatus from "../utilities/enums/e.task-status.js";
 
 const taskSchema = new Schema(
   {
-    services: {
+    service: {
       type: Schema.Types.ObjectId,
       ref: "Service",
       required: [true, "Service required"],
