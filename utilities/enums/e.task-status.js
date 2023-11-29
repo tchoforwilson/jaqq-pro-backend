@@ -3,8 +3,9 @@
  */
 export default {
   PENDING: "Pending",
+  ASSIGNED: "Assigned",
   ACCEPTED: "Accepted",
   PROGRESS: "In progress",
-  completed: "Completed",
-  cancelled: "Cancelled",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };
