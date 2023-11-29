@@ -12,7 +12,7 @@ import globalErrorHandler from "./controllers/error.controller.js";
 import AppError from "./utilities/appError.js";
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
-// import taskRouter from "./routes/task.routes.js";
+import taskRouter from "./routes/task.routes.js";
 import serviceRouter from "./routes/service.routes.js";
 import pricingRouter from "./routes/pricing.routes.js";
 
@@ -57,11 +57,7 @@ app.use(`${config.prefix}/pricings`, pricingRouter);
 // Socket Connections
 io.on("connection", (socket) => {
   console.log("Connection established", socket.id);
-  socket.broadcast.emit("hello", "world");
-  socket.on("create", (data) => {
-    console.log(data);
-    socket.broadcast.emit("created", "Welcome"); // send the created event back to the client that initiated the "create" event
-  });
+  taskRouter(socket);
 });
 
 // INVALID ROUTES
