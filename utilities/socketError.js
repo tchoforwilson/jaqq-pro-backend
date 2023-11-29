@@ -1,4 +1,4 @@
-class SocketError extends Error {
+export default class SocketError extends Error {
   /**
    * @breif SocketError class constructor
    * @param {String} message Error message
