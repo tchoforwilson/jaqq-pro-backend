@@ -15,6 +15,7 @@ import userRouter from "./routes/user.routes.js";
 import taskRouter from "./routes/task.routes.js";
 import serviceRouter from "./routes/service.routes.js";
 import pricingRouter from "./routes/pricing.routes.js";
+//import socketRoutes from "./routes/socket.routes.js";
 
 // Start express app
 const app = express();
@@ -29,7 +30,7 @@ app.use(helmet());
 
 // Serving static files
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 // Development logging
 if (config.env === "development") {
@@ -50,15 +51,18 @@ app.use((req, res, next) => {
 // ROUTES
 app.use(`${config.prefix}/auth`, authRouter);
 app.use(`${config.prefix}/users`, userRouter);
-// app.use(`${config.prefix}/tasks`, taskRouter);
+app.use(`${config.prefix}/tasks`, taskRouter);
 app.use(`${config.prefix}/services`, serviceRouter);
 app.use(`${config.prefix}/pricings`, pricingRouter);
 
 // Socket Connections
-io.on("connection", (socket) => {
-  console.log("Connection established", socket.id);
-  taskRouter(socket);
-});
+// io.on("connection", (socket) => {
+//   console.log("user connected.....");
+//   socketRoutes.socketUserOnline(1, socket.id);
+//   socket.on("disconnect", () => {
+//     socketRoutes.socketUserOffline(2);
+//   });
+// });
 
 // INVALID ROUTES
 app.all("*", (req, res, next) => {

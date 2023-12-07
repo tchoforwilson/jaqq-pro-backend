@@ -40,6 +40,13 @@ const config = {
     token: process.env.TWILIO_AUTH_TOKEN,
     from: process.env.TWILIO_FROM,
   },
+  /**
+   * @breif Setup remote url
+   */
+  url: {
+    dev: process.env.REMOTE_URL_DEV,
+    prod: process.env.REMOTE_URL_PROD,
+  },
 };
 
 export default config;

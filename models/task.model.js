@@ -16,7 +16,6 @@ const taskSchema = new Schema(
     assignee: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Task must have a service provider"],
     },
     status: {
       type: String,

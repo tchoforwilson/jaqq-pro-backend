@@ -34,7 +34,8 @@ const updateMe = catchAsync(async (req, res, next) => {
     "firstName",
     "lastName",
     "birthday",
-    "email"
+    "email",
+    "services"
   );
 
   // 3) Update user document

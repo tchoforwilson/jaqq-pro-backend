@@ -48,6 +48,8 @@ const userSchema = new Schema(
       default: true,
     },
     online: { type: Boolean, default: true },
+    connectionId: String,
+    lastConnection: Date,
     location: {
       // GeoJSON
       type: {
