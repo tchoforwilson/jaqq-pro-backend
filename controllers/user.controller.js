@@ -1,10 +1,39 @@
+import sharp from "sharp";
 import User from "../models/user.model.js";
 
 import factory from "./handler.factory.js";
 import AppError from "../utilities/appError.js";
 import catchAsync from "../utilities/catchAsync.js";
 import { filterObj } from "../utilities/utils.js";
+import { upload } from "../utilities/upload.js";
 import eStatusCode from "../utilities/enums/e.status-code.js";
+
+/**
+ * @breif Upload a single user photo
+ */
+const uploadUserPhoto = upload.single("photo");
+
+/**
+ * @breif Resize user photo to size 500x500 and convert format to jpeg
+ * then store photo in folder public/images/users
+ */
+const resizeUserPhoto = catchAsync(async (req, res, next) => {
+  // 1. Check if file exists
+  if (!req.file) return next();
+
+  // 2. Rename file
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+  req.body.photo = req.file.filename;
+
+  // 3. Upload file
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/images/users/${req.file.filename}`);
+
+  next();
+});
 
 /**
  * @bref Set parameter id in getting current user
@@ -35,7 +64,8 @@ const updateMe = catchAsync(async (req, res, next) => {
     "lastName",
     "birthday",
     "email",
-    "services"
+    "services",
+    "photo"
   );
 
   // 3) Update user document
@@ -86,6 +116,8 @@ const countUsers = factory.count(User);
 const searchUser = factory.search(User);
 
 export default {
+  uploadUserPhoto,
+  resizeUserPhoto,
   getMe,
   updateMe,
   deleteMe,
