@@ -152,8 +152,8 @@ const register = catchAsync(async (req, res, next) => {
 
   // 2. Get user information
   const newUser = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
+    firstname: req.body.firstname,
+    lastname: req.body.lastname,
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
