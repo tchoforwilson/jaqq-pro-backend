@@ -42,6 +42,27 @@ const getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
 };
+/**
+ * @breif Add ore remove servives from provider
+ */
+const toggleMyServices = catchAsync(async (req, res, next) => {
+  // 1. Get task
+  const user = await User.findByIdAndUpdate(req.user.id, {
+    tasks: req.body.tasks,
+  });
+
+  // 2. Check if the task are updated or user not found
+  if (!user) {
+    return next(new AppError(eStatusCode.NOT_FOUND, "User not found!"));
+  }
+
+  // 3. Send response
+  res.status(eStatusCode.SUCCESS).json({
+    status: "success",
+    message: "Tasks updated successfully",
+    data: user,
+  });
+});
 
 /**
  * @breif Controller for updating user profile
@@ -60,8 +81,8 @@ const updateMe = catchAsync(async (req, res, next) => {
   // 2) Filtered out unwanted fields names that are not allowed to be updated
   const filteredBody = filterObj(
     req.body,
-    "firstName",
-    "lastName",
+    "firstname",
+    "lastname",
     "birthday",
     "email",
     "services",
@@ -120,6 +141,7 @@ export default {
   resizeUserPhoto,
   getMe,
   updateMe,
+  toggleMyServices,
   deleteMe,
   createUser,
   getUser,
