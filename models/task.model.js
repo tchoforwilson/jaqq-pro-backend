@@ -52,6 +52,23 @@ const taskSchema = new Schema(
   }
 );
 
+taskSchema.pre(/^find/, function (next) {
+  // Populate with service
+  this.populate({
+    path: "service",
+    select: "label",
+  });
+  this.populate({
+    path: "user",
+    select: "firstname, lastname, email, phone, photo, location",
+  });
+  this.populate({
+    path: "assignee",
+    select: "firstname, lastname, email, phone, photo, location",
+  });
+  next();
+});
+
 const Task = model("Task", taskSchema);
 
 export default Task;
