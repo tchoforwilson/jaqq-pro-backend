@@ -1,15 +1,16 @@
+import { Schema, model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import { Schema, model } from "mongoose";
+import pointSchema from "../schemas/piont.schema.js";
 import eUserRole from "../utilities/enums/e.user-role.js";
 
 const userSchema = new Schema(
   {
-    firstName: {
+    firstname: {
       type: String,
       required: [true, "Please provide your first name!"],
     },
-    lastName: {
+    lastname: {
       type: String,
       required: [true, "Please provide your last name!"],
     },
@@ -22,14 +23,10 @@ const userSchema = new Schema(
     },
     phone: {
       type: String,
-      // required: [true, "Please provide your phone number"], TODO: check this out
       maxlength: [13, "A phone number must be 13 digits"],
       unique: true,
     },
-    birthday: {
-      type: Date,
-      // required: [true, "Please tell us your date of birth!"], TODO: Check this out
-    },
+    birthday: Date,
     photo: String,
     phoneValidated: {
       type: Boolean,
@@ -40,7 +37,12 @@ const userSchema = new Schema(
       enum: [...Object.values(eUserRole)],
       default: eUserRole.USER,
     },
-    services: [{ type: Schema.Types.ObjectId, ref: "Service" }],
+    services: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Service",
+      },
+    ],
     lastVerificationSMSCode: Number,
     smsCodeExpiresAt: Date,
     active: {
@@ -50,15 +52,7 @@ const userSchema = new Schema(
     online: { type: Boolean, default: true },
     connectionId: String,
     lastConnection: Date,
-    location: {
-      // GeoJSON
-      type: {
-        type: String,
-        default: "Point",
-        enum: ["Point"],
-      },
-      coordinates: [Number],
-    },
+    location: pointSchema,
     password: {
       type: String,
       required: [true, "Please provide a password!"],
@@ -156,6 +150,14 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   // False means NOT changed
   return false;
 };
+
+// userSchema.pre(/^find/, function (next) {
+//   this.populate({
+//     path: "services",
+//     select: "label",
+//   });
+//   next();
+// });
 
 const User = model("User", userSchema);
 
