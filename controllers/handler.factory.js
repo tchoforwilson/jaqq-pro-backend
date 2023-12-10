@@ -92,6 +92,7 @@ const getAll = (Model) =>
     // 1. To allow for nested GET routes
     let filter = {};
 
+    if (req.params.serviceId) filter = { service: req.params.serviceId };
     if (req.params.userId) filter = { user: req.params.userId };
     if (req.params.taskId) filter = { task: req.params.taskId };
     if (req.params.pricingId) filter = { pricing: req.params.pricingId };
