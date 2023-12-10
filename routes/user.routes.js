@@ -24,6 +24,11 @@ router.patch(
   userController.resizeUserPhoto,
   userController.updateMe
 );
+router.patch(
+  "/toggle-services",
+  authController.restrictTo(eUserRole.PROVIDER),
+  userController.toggleMyServices
+);
 router.delete("/delete-me", userController.deleteMe);
 
 router.use(authController.restrictTo(eUserRole.ADMIN));
