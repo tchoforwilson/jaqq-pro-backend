@@ -43,13 +43,17 @@ const getMe = (req, res, next) => {
   next();
 };
 /**
- * @breif Add ore remove servives from provider
+ * @breif Add ore remove services from provider
  */
 const toggleMyServices = catchAsync(async (req, res, next) => {
-  // 1. Get task
-  const user = await User.findByIdAndUpdate(req.user.id, {
-    tasks: req.body.tasks,
-  });
+  // 1. Get services
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      services: req.body.services,
+    },
+    { new: true, runValidators: false }
+  );
 
   // 2. Check if the task are updated or user not found
   if (!user) {
@@ -59,7 +63,7 @@ const toggleMyServices = catchAsync(async (req, res, next) => {
   // 3. Send response
   res.status(eStatusCode.SUCCESS).json({
     status: "success",
-    message: "Tasks updated successfully",
+    message: "Services updated successfully",
     data: user,
   });
 });
@@ -86,7 +90,8 @@ const updateMe = catchAsync(async (req, res, next) => {
     "birthday",
     "email",
     "services",
-    "photo"
+    "photo",
+    "location"
   );
 
   // 3) Update user document
