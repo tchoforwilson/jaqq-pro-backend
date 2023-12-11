@@ -22,7 +22,12 @@ const app = express();
 
 // Define server
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin:
+      config.env === "production" ? false : ["*", "http://localhost:8080"],
+  },
+});
 
 // GLOBAL MIDDLEWARES
 // Set security HTTP headers
@@ -56,13 +61,9 @@ app.use(`${config.prefix}/services`, serviceRouter);
 app.use(`${config.prefix}/pricings`, pricingRouter);
 
 // Socket Connections
-// io.on("connection", (socket) => {
-//   console.log("user connected.....");
-//   socketRoutes.socketUserOnline(1, socket.id);
-//   socket.on("disconnect", () => {
-//     socketRoutes.socketUserOffline(2);
-//   });
-// });
+io.on("connection", (socket) => {
+  console.log("user connected.....");
+});
 
 // INVALID ROUTES
 app.all("*", (req, res, next) => {
