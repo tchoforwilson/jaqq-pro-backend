@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import pointSchema from "../schemas/point.schema.js";
 import eTaskStatus from "../utilities/enums/e.task-status.js";
 
 const taskSchema = new Schema(
@@ -13,7 +14,7 @@ const taskSchema = new Schema(
       ref: "User",
       required: [true, "Task must belong to a user"],
     },
-    assignee: {
+    provider: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
@@ -23,13 +24,8 @@ const taskSchema = new Schema(
       default: eTaskStatus.PENDING,
     },
     location: {
-      // GeoJSON
-      type: {
-        type: String,
-        default: "Point",
-        enum: ["Point"],
-      },
-      coordinates: [Number],
+      type: pointSchema,
+      required: [true, "Specify task location"],
     },
     pricing: {
       minPrice: {
@@ -53,19 +49,19 @@ const taskSchema = new Schema(
 );
 
 taskSchema.pre(/^find/, function (next) {
-  // Populate with service
   this.populate({
     path: "service",
-    select: "label",
-  });
-  this.populate({
-    path: "user",
-    select: "firstname, lastname, email, phone, photo, location",
-  });
-  this.populate({
-    path: "assignee",
-    select: "firstname, lastname, email, phone, photo, location",
-  });
+    select: "_id label",
+  })
+    .populate({
+      path: "user",
+      select: "firstname lastname email phone photo location",
+    })
+    .populate({
+      path: "provider",
+      select: "firstname lastname email phone photo location",
+    });
+
   next();
 });
 

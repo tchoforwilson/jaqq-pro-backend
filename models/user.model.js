@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import pointSchema from "../schemas/piont.schema.js";
+import pointSchema from "../schemas/point.schema.js";
 import eUserRole from "../utilities/enums/e.user-role.js";
 
 const userSchema = new Schema(
