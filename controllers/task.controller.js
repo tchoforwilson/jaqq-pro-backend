@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import factory from "./handler.factory.js";
+import User from "../models/user.model.js";
 import Task from "../models/task.model.js";
 import eUserRole from "../utilities/enums/e.user-role.js";
 import eTaskStatus from "../utilities/enums/e.task-status.js";
@@ -18,12 +19,8 @@ cron.schedule("*/5 * * * *", async () => {
 
   // 2. Search for tasks assigned to providers
   for (const task of tasks) {
-    const assignedUser = await User.findOne({ _id: task.assignee });
-    if (
-      !assignedUser ||
-      !assignedUser.online ||
-      assignedUser.role !== eUserRole.PROVIDER
-    ) {
+    const provider = await User.findOne({ _id: task.provider });
+    if (!provider || !provider.online || provider.role !== eUserRole.PROVIDER) {
       // 3. Update task status
       task.status = eTaskStatus.PENDING;
       await Task.updateOne({ _id: task.id }, { status: eTaskStatus.PENDING });
@@ -59,7 +56,7 @@ const assignedTaskToProvider = async (task) => {
       role: eUserRole.PROVIDER,
       location: {
         $near: {
-          $geometry: { type: "Point", coordinates: task.location },
+          $geometry: { type: "Point", coordinates: task.location.coordinates },
           $maxDistance: 10000,
         },
       },
@@ -72,16 +69,18 @@ const assignedTaskToProvider = async (task) => {
         "No online providers found within 10 kilometers of the task location"
       );
     }
-  } catch (error) {}
+    // 2. Assigned task to provider who is online
+    const closestUser = onlineUsers[0];
 
-  // 2. Assigned task to provider who is online
-  // const closestUser = onlineUsers[0];
-  // closestUser.tasks.push(task);
-  task.assignee = closestUser._id;
-  task.status = eTaskStatus.ASSIGNED;
-  //
-  await task.save();
-  // return closestUser;
+    // closestUser.tasks.push(task);
+    task.provider = closestUser._id;
+    task.status = eTaskStatus.ASSIGNED;
+    //
+    await task.save();
+    // return closestUser;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const createTask = catchAsync(async (req, res, next) => {
