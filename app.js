@@ -15,14 +15,14 @@ import userRouter from "./routes/user.routes.js";
 import taskRouter from "./routes/task.routes.js";
 import serviceRouter from "./routes/service.routes.js";
 import pricingRouter from "./routes/pricing.routes.js";
-//import socketRoutes from "./routes/socket.routes.js";
+import socketRoutes from "./routes/socket.routes.js";
 
 // Start express app
 const app = express();
 
 // Define server
 const server = http.createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin:
       config.env === "production" ? false : ["*", "http://localhost:8080"],
@@ -63,6 +63,11 @@ app.use(`${config.prefix}/pricings`, pricingRouter);
 // Socket Connections
 io.on("connection", (socket) => {
   console.log("user connected.....");
+  socketRoutes.handleUserConnect(socket);
+  socket.on("disconnect", () => {
+    console.log("User disconnected!!");
+    socketRoutes.handleUserDisconnect(socket);
+  });
 });
 
 // INVALID ROUTES
