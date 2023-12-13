@@ -1,4 +1,5 @@
 import cron from "node-cron";
+import { io } from "../app.js";
 import factory from "./handler.factory.js";
 import User from "../models/user.model.js";
 import Task from "../models/task.model.js";
@@ -13,74 +14,85 @@ const setTaskUserId = (req, res, next) => {
 
 // Set a timeout to check for provider response
 let tasksToReassign = [];
-cron.schedule("*/5 * * * *", async () => {
-  // 1. Get all assigned tasks
-  const tasks = await Task.find({ status: "assigned" });
+cron.schedule(
+  "*/5 * * * *",
+  catchAsync(async () => {
+    // 1. Get all assigned tasks
+    const tasks = await Task.find({ status: eTaskStatus.ASSIGNED });
 
-  // 2. Search for tasks assigned to providers
-  for (const task of tasks) {
-    const provider = await User.findOne({ _id: task.provider });
-    if (!provider || !provider.online || provider.role !== eUserRole.PROVIDER) {
-      // 3. Update task status
-      task.status = eTaskStatus.PENDING;
-      await Task.updateOne({ _id: task.id }, { status: eTaskStatus.PENDING });
+    // 2. Search for tasks assigned to providers
+    for (const task of tasks) {
+      const provider = await User.findOne({ _id: task.provider });
+      if (
+        !provider ||
+        !provider.online ||
+        provider.role !== eUserRole.PROVIDER
+      ) {
+        // 3. Update task status
+        task.status = eTaskStatus.PENDING;
+        await Task.updateOne({ _id: task.id }, { status: eTaskStatus.PENDING });
 
-      // 4. Emit response to user about task status
-      // TODO: Use socket connection
-      console.log(
-        `Task ${task.id} status updated to unassigned, as provider didn't respond within 5 minutes.`
-      );
-      tasksToReassign.push(task);
+        // 4. Emit response to user about task status
+        io.emit("task:unassigned", {
+          data: task,
+          message: `Task ${task.service.label} status updated to unassigned, as provider didn't respond within 5 minutes.`,
+        });
+        // // TODO: Use socket connection
+        // console.log(
+        //   `Task ${task.id} status updated to unassigned, as provider didn't respond within 5 minutes.`
+        // );
+        tasksToReassign.push(task);
+      }
     }
-  }
 
-  // 5. Reassign task to new providers
-  if (tasksToReassign.length > 0) {
-    for (const task of tasksToReassign) {
-      const reassignResult = assignTaskToUser(task);
-      console.log(`Task ${task.id} reassigned to user ${reassignResult.id}`);
+    // 5. Reassign task to new providers
+    if (tasksToReassign.length > 0) {
+      for (const task of tasksToReassign) {
+        const reassignResult = assignTaskToUser(task);
+        io.emit("task:reassign", {
+          data: reassignResult,
+          message: `Task ${task.service.label} reassigned to user ${reassignResult.name}`,
+        });
+        // console.log(`Task ${task.id} reassigned to user ${reassignResult.id}`);
+      }
+      tasksToReassign = [];
     }
-    tasksToReassign = [];
-  }
-});
+  })
+);
 
 /**
  * @breif Assigntask to provider who is online
  * @param {Object} task
  */
 const assignedTaskToProvider = async (task) => {
-  try {
-    // 1. Search for online task providers
-    const onlineUsers = await User.find({
-      online: true,
-      role: eUserRole.PROVIDER,
-      location: {
-        $near: {
-          $geometry: { type: "Point", coordinates: task.location.coordinates },
-          $maxDistance: 10000,
-        },
+  // 1. Search for online task providers
+  const onlineUsers = await User.find({
+    online: true,
+    role: eUserRole.PROVIDER,
+    location: {
+      $near: {
+        $geometry: { type: "Point", coordinates: task.location.coordinates },
+        $maxDistance: 10000,
       },
-    });
+    },
+  });
 
-    // 2. Check if any provider is available
-    if (onlineUsers.length === 0) {
-      // TODO: This should be a socket emitted response
-      throw new Error(
-        "No online providers found within 10 kilometers of the task location"
-      );
-    }
-    // 2. Assigned task to provider who is online
-    const closestUser = onlineUsers[0];
-
-    // closestUser.tasks.push(task);
-    task.provider = closestUser._id;
-    task.status = eTaskStatus.ASSIGNED;
-    //
-    await task.save();
-    // return closestUser;
-  } catch (error) {
-    console.log(error);
+  // 2. Check if any provider is available
+  if (onlineUsers.length === 0) {
+    io.emit("error:no-provider", { message: "No provider available" });
+    // throw new Error(
+    //   "No online providers found within 10 kilometers of the task location"
+    // );
   }
+  // 2. Assigned task to provider who is online
+  const closestUser = onlineUsers[0];
+
+  // closestUser.tasks.push(task);
+  task.provider = closestUser._id;
+  task.status = eTaskStatus.ASSIGNED;
+  //
+  await task.save();
+  // return closestUser;
 };
 
 const createTask = catchAsync(async (req, res, next) => {
