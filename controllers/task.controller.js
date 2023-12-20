@@ -16,11 +16,21 @@ const setTaskUserId = (req, res, next) => {
   next();
 };
 
-// const reassignTaskUser = catchAsync(async() => {
-//   // 1. Get all taskes with pending status
-//   const tasks = await Task.find({ status: eTaskStatus.PENDING });
+const reassignTasks = catchAsync(async () => {
+  // 1. Get all taskes with pending status
+  const tasks = await Task.find({ status: eTaskStatus.PENDING });
 
-// })
+  // 2. If there are any tasks, reassign them
+  if (tasks.length > CONST_ZEROU) {
+    for (const task of tasks) {
+      await assignedTaskToProvider(task);
+      io.emit("task:reassign", {
+        data: task,
+        message: `Task ${task.service.label} reassigned to user ${task.user.firstName}`,
+      });
+    }
+  }
+});
 
 // Set a timeout to check for provider response
 let tasksToReassign = [];
@@ -56,17 +66,7 @@ cron.schedule(
     }
 
     // 5. Reassign task to new provider
-    if (tasksToReassign.length > CONST_ZEROU) {
-      for (const task of tasksToReassign) {
-        const reassignResult = assignTaskToUser(task);
-        io.emit("task:reassign", {
-          data: reassignResult,
-          message: `Task ${task.service.label} reassigned to user ${reassignResult.name}`,
-        });
-      }
-      tasksToReassign = [];
-      return;
-    }
+    reassignTasks();
   })
 );
 
