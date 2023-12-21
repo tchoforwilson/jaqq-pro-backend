@@ -4,7 +4,7 @@ import User from "../models/user.model.js";
 import config from "../configurations/config.js";
 import catchAsync from "../utilities/catchAsync.js";
 
-const handleUserConnect = catchAsync(async (socket) => {
+const handleUserConnect = async (socket) => {
   // 1. Get token from header
   let token;
   if (socket.handshake.headers.token) {
@@ -45,15 +45,15 @@ const handleUserConnect = catchAsync(async (socket) => {
 
   // 7. Emit user:connected event
   socket.emit("user:connected", { data: currentuser });
-});
+};
 
-const handleUserDisconnect = catchAsync(async (socket) => {
+const handleUserDisconnect = async (socket) => {
   // 1. Get user and update connection status
   await User.findOneAndUpdate(
     { connectionId: socket.id },
     { online: false, lastConnection: Date.now(), connectionId: null }
   );
-});
+};
 
 export default {
   handleUserConnect,
