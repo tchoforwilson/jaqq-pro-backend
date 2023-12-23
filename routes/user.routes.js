@@ -10,7 +10,7 @@ const router = Router();
 router.use(authController.protect);
 
 // Fetching and creating provider tasks
-router.use("/:userId/taks", taskRouter);
+router.use("/:userId/tasks", taskRouter);
 
 router.route("/search", userController.searchUser);
 router.route("/count", userController.countUsers);
