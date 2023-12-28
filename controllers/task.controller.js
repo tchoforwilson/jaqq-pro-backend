@@ -6,7 +6,9 @@ import Task from "../models/task.model.js";
 import eUserRole from "../utilities/enums/e.user-role.js";
 import eTaskStatus from "../utilities/enums/e.task-status.js";
 import catchAsync from "../utilities/catchAsync.js";
+import AppError from "../utilities/appError.js";
 import {
+  CONST_ONEU,
   CONST_ZEROU,
   MAX_PROVIDER_DISTANCE,
 } from "../utilities/constants/index.js";
@@ -52,7 +54,7 @@ cron.schedule(
         assignTask.status = eTaskStatus.PENDING;
         await Task.updateOne(
           { _id: assignTask.id },
-          { status: eTaskStatus.PENDING }
+          { provider: null, status: eTaskStatus.PENDING }
         );
 
         // 4. Emit response to user about task status
@@ -87,8 +89,6 @@ const assignedTaskToProvider = async (task) => {
     },
   });
 
-  console.log(onlineUsers);
-
   // 2. Check if any provider is available
   if (onlineUsers.length === CONST_ZEROU) {
     io.emit("error:no-provider", { message: "No provider available" });
@@ -106,6 +106,9 @@ const assignedTaskToProvider = async (task) => {
   await task.save();
 };
 
+/**
+ * @breif Create a new task
+ */
 const createTask = catchAsync(async (req, res, next) => {
   // 1. create Task
   const newTask = await Task.create(req.body);
@@ -121,9 +124,62 @@ const createTask = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * @breif Change task status
+ */
+const toggleTaskStatus = catchAsync(async (req, res, next) => {
+  // 1. Get the task
+  const task = await Task.findById(req.params.taskId);
+
+  if (!task) {
+    return next(
+      new AppError(
+        `Task with ID ${req.params.id} not found`,
+        eStatusCode.NOT_FOUND
+      )
+    );
+  }
+
+  const { status } = req.body;
+  task.status = status;
+  // Provider rejects task
+  if (status === eTaskStatus.REJECTED) {
+    if (!task.prevProviders.includes(req.user._id)) {
+      task.prevProviders.push(req.user.id);
+    }
+    task.provider = null;
+    io.emit("task:rejected", {
+      data: task,
+      message: `Provider ${req.user.firstname} rejects task`,
+    });
+  }
+
+  // Provider accepts task
+  if (status === eTaskStatus.ACCEPTED) {
+    const providerExist =
+      task.prevProviders && task.prevProviders.indexOf(req.user._id);
+
+    if (providerExist && providerExist >= CONST_ZEROU) {
+      console.log(providerExist);
+      task.prevProviders.splice(providerExist, CONST_ONEU);
+    }
+    task.provider = req.user._id;
+
+    io.emit("task:accepted", task);
+  }
+
+  await task.save();
+
+  res.status(200).json({
+    status: "success",
+    data: task,
+  });
+});
+
 export default {
   setTaskUserId,
   createTask,
+  toggleTaskStatus,
   getAllTasks: factory.getAll(Task),
   getTask: factory.getOne(Task),
   updateTask: factory.updateOne(Task),
