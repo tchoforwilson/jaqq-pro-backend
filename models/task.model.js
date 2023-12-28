@@ -18,6 +18,12 @@ const taskSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    prevProviders: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     status: {
       type: String,
       enum: [...Object.values(eTaskStatus)],
@@ -48,6 +54,10 @@ const taskSchema = new Schema(
   }
 );
 
+// User select values
+const userSelect =
+  "firstname lastname email phone photo location online connectionId lastConnection";
+
 taskSchema.pre(/^find/, function (next) {
   this.populate({
     path: "service",
@@ -55,11 +65,11 @@ taskSchema.pre(/^find/, function (next) {
   })
     .populate({
       path: "user",
-      select: "firstname lastname email phone photo location",
+      select: userSelect,
     })
     .populate({
       path: "provider",
-      select: "firstname lastname email phone photo location",
+      select: userSelect,
     });
 
   next();
