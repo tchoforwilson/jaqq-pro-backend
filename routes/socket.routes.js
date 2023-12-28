@@ -39,7 +39,7 @@ const handleUserConnect = async (socket) => {
 
   // 6. Update user connection
   currentuser.online = true;
-  currentuser.lastConnection = Date.now();
+  currentuser.lastConnection = new Date(Date.now());
   currentuser.connectionId = socket.id;
   await currentuser.save({ validateBeforeSave: false });
 
