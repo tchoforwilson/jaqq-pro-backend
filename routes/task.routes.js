@@ -7,6 +7,12 @@ const router = Router({ mergeParams: true });
 
 router.use(authController.protect);
 
+router.patch(
+  "/:taskId/set-status",
+  authController.restrictTo(eUserRole.PROVIDER, eUserRole.USER),
+  taskController.toggleTaskStatus
+);
+
 router
   .route("/")
   .post(
