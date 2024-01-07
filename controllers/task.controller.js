@@ -1,17 +1,17 @@
-import cron from "node-cron";
-import { io } from "../app.js";
-import factory from "./handler.factory.js";
-import User from "../models/user.model.js";
-import Task from "../models/task.model.js";
-import eUserRole from "../utilities/enums/e.user-role.js";
-import eTaskStatus from "../utilities/enums/e.task-status.js";
-import catchAsync from "../utilities/catchAsync.js";
-import AppError from "../utilities/appError.js";
+import cron from 'node-cron';
+import { io } from '../app.js';
+import factory from './handler.factory.js';
+import User from '../models/user.model.js';
+import Task from '../models/task.model.js';
+import eUserRole from '../utilities/enums/e.user-role.js';
+import eTaskStatus from '../utilities/enums/e.task-status.js';
+import catchAsync from '../utilities/catchAsync.js';
+import AppError from '../utilities/appError.js';
 import {
   CONST_ONEU,
   CONST_ZEROU,
   MAX_PROVIDER_DISTANCE,
-} from "../utilities/constants/index.js";
+} from '../utilities/constants/index.js';
 
 const setTaskUserId = (req, res, next) => {
   if (!req.body.user) req.body.user = req.user.id;
@@ -26,7 +26,7 @@ const reassignTasks = async () => {
   if (tasks.length > CONST_ZEROU) {
     for (const task of tasks) {
       await assignedTaskToProvider(task);
-      io.emit("task:reassign", {
+      io.emit('task:reassign', {
         data: task,
         message: `Task ${task.service.label} reassigned to user ${task.user.firstName}`,
       });
@@ -37,7 +37,7 @@ const reassignTasks = async () => {
 // Set a timeout to check for provider response
 let tasksToReassign = [];
 cron.schedule(
-  "*/2 * * * *",
+  '*/2 * * * *',
   catchAsync(async () => {
     // 1. Get all assigned tasks
     const assignedTasks = await Task.find({ status: eTaskStatus.ASSIGNED });
@@ -58,7 +58,7 @@ cron.schedule(
         );
 
         // 4. Emit response to user about task status
-        io.emit("task:unassigned", {
+        io.emit('task:unassigned', {
           data: assignTask,
           message: `Task ${assignTask.service.label} status updated to unassigned, as provider didn't respond within 5 minutes.`,
         });
@@ -81,9 +81,10 @@ const assignedTaskToProvider = async (task) => {
   const onlineUsers = await User.find({
     online: true,
     role: eUserRole.PROVIDER,
+    services: { $in: [task.service] },
     location: {
       $near: {
-        $geometry: { type: "Point", coordinates: task.location.coordinates },
+        $geometry: { type: 'Point', coordinates: task.location.coordinates },
         $maxDistance: MAX_PROVIDER_DISTANCE,
       },
     },
@@ -91,7 +92,7 @@ const assignedTaskToProvider = async (task) => {
 
   // 2. Check if any provider is available
   if (onlineUsers.length === CONST_ZEROU) {
-    io.emit("error:no-provider", { message: "No provider available" });
+    io.emit('error:no-provider', { message: 'No provider available' });
     return;
   }
 
@@ -118,8 +119,8 @@ const createTask = catchAsync(async (req, res, next) => {
 
   // 3. Send back response to user
   res.status(201).json({
-    status: "Success",
-    message: "Task created successfully",
+    status: 'Success',
+    message: 'Task created successfully',
     data: newTask,
   });
 });
@@ -148,7 +149,7 @@ const toggleTaskStatus = catchAsync(async (req, res, next) => {
       task.prevProviders.push(req.user.id);
     }
     task.provider = null;
-    io.emit("task:rejected", {
+    io.emit('task:rejected', {
       data: task,
       message: `Provider ${req.user.firstname} rejects task`,
     });
@@ -165,13 +166,13 @@ const toggleTaskStatus = catchAsync(async (req, res, next) => {
     }
     task.provider = req.user._id;
 
-    io.emit("task:accepted", task);
+    io.emit('task:accepted', { data: task });
   }
 
   await task.save();
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: task,
   });
 });
