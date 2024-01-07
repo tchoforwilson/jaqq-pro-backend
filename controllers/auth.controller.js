@@ -1,22 +1,22 @@
-import jwt from "jsonwebtoken";
-import { promisify } from "util";
-import Randomstring from "randomstring";
+import jwt from 'jsonwebtoken';
+import { promisify } from 'util';
+import Randomstring from 'randomstring';
 
-import User from "../models/user.model.js";
-import sendMessage from "../services/sms.js";
-import AppError from "../utilities/appError.js";
-import catchAsync from "../utilities/catchAsync.js";
-import config from "../configurations/config.js";
-import eStatusCode from "../utilities/enums/e.status-code.js";
-import { SMS_LENGTH } from "../utilities/constants/index.js";
+import User from '../models/user.model.js';
+import sendMessage from '../services/sms.js';
+import AppError from '../utilities/appError.js';
+import catchAsync from '../utilities/catchAsync.js';
+import config from '../configurations/config.js';
+import eStatusCode from '../utilities/enums/e.status-code.js';
+import { SMS_LENGTH } from '../utilities/constants/index.js';
 
 /**
  * @breif Generate user jwt token from user object
  * @param {Object} user -> user (user or provider) object
  * @returns JWT
  */
-const signToken = (user) =>
-  jwt.sign({ user }, config.jwt.secret, {
+const signToken = (id) =>
+  jwt.sign({ id }, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn,
   });
 
@@ -27,21 +27,21 @@ const signToken = (user) =>
  * @param {Response} res -> Response object
  */
 const createSendToken = (user, statusCode, req, res) => {
-  const token = signToken(user);
+  const token = signToken(user._id);
 
-  res.cookie("jwt", token, {
+  res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + config.jwt.cookieExpires * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    secure: req.secure || req.headers["x-forwarded-proto"] === "https",
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   });
 
   // remove password in output
   user.password = undefined;
 
   res.status(statusCode).json({
-    status: "success",
+    status: 'success',
     token,
     data: {
       user,
@@ -57,16 +57,16 @@ const createSendToken = (user, statusCode, req, res) => {
 export const checkPhoneNumber = (req, res, next) => {
   const phoneNumber = req.body.phone;
   const cameroonPhoneRegex = /^6(?:[578]\d|5[0-4])\d{6}$/;
-  if (phoneNumber.startsWith("+237") && phoneNumber.length === 13) {
+  if (phoneNumber.startsWith('+237') && phoneNumber.length === 13) {
     // If the string starts with +237, do nothing
     next();
   } else if (phoneNumber.length === 9 && cameroonPhoneRegex.test(phoneNumber)) {
     // If the string doesn't start with +237 and has 9 characters, attach +237 to the beginning
-    req.body.phone = "+237" + req.body.phone;
+    req.body.phone = '+237' + req.body.phone;
     next();
   } else {
     // If the string doesn't meet the above conditions, send an error message
-    next(new AppError("Invalid phone number!", eStatusCode.BAD_REQUEST));
+    next(new AppError('Invalid phone number!', eStatusCode.BAD_REQUEST));
   }
 };
 
@@ -79,7 +79,7 @@ const generateAndSendSMSCode = catchAsync(async (req, res, next) => {
   // 1. Generate random sms code
   let code = Randomstring.generate({
     length: SMS_LENGTH,
-    charset: "numeric",
+    charset: 'numeric',
   });
   let codeExpires = new Date(Date.now() + 20 * 60 * 1000); // Code expires in 20 minutes
 
@@ -95,7 +95,7 @@ const generateAndSendSMSCode = catchAsync(async (req, res, next) => {
     codeExpires = null;
     return next(
       new AppError(
-        "Invalid phone number or unable to send message",
+        'Invalid phone number or unable to send message',
         eStatusCode.SERVER_ERROR
       )
     );
@@ -115,7 +115,7 @@ const generateAndSendSMSCode = catchAsync(async (req, res, next) => {
   // 7. Send response
   res
     .status(eStatusCode.SUCCESS)
-    .json({ status: "success", message: "sms sent!", data: user });
+    .json({ status: 'success', message: 'sms sent!', data: user });
 });
 
 /**
@@ -128,7 +128,7 @@ const resendSMSCode = catchAsync(async (req, res, next) => {
   if (req.user.phoneValidated) {
     return next(
       new AppError(
-        "Invalid request, your are phone number is already authenticated",
+        'Invalid request, your are phone number is already authenticated',
         eStatusCode.BAD_REQUEST
       )
     );
@@ -147,7 +147,7 @@ const register = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (user) {
-    return next(new AppError("User already exists!", eStatusCode.BAD_REQUEST));
+    return next(new AppError('User already exists!', eStatusCode.BAD_REQUEST));
   }
 
   // 2. Get user information
@@ -170,7 +170,7 @@ const registerPhone = catchAsync(async (req, res, next) => {
   // 1. Check if phone number if available
   if (!req.body.phone) {
     return next(
-      new AppError("Please provide a phone number!", eStatusCode.BAD_REQUEST)
+      new AppError('Please provide a phone number!', eStatusCode.BAD_REQUEST)
     );
   }
 
@@ -180,7 +180,7 @@ const registerPhone = catchAsync(async (req, res, next) => {
   if (user) {
     return next(
       new AppError(
-        "User with phone number already exists",
+        'User with phone number already exists',
         eStatusCode.BAD_REQUEST
       )
     );
@@ -203,18 +203,18 @@ const login = catchAsync(async (req, res, next) => {
   if (!email || !password) {
     return next(
       new AppError(
-        "Please provide email and password!",
+        'Please provide email and password!',
         eStatusCode.BAD_REQUEST
       )
     );
   }
 
   // 2) Check if user exists && password is correct
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(
-      new AppError("Incorrect email or password", eStatusCode.FORBIDDEN)
+      new AppError('Incorrect email or password', eStatusCode.FORBIDDEN)
     );
   }
 
@@ -226,20 +226,20 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
   // 1. Get code
   const { code } = req.body;
   if (!code) {
-    return next(new AppError("Please provide code", eStatusCode.BAD_REQUEST));
+    return next(new AppError('Please provide code', eStatusCode.BAD_REQUEST));
   }
   // 2. Get user
   const user = await User.findById(req.user.id);
 
   // 3. Verify if code has expire
   if (Date.now() > user.smsCodeExpiresAt) {
-    return next(new AppError("Your code has expire!", eStatusCode.BAD_REQUEST));
+    return next(new AppError('Your code has expire!', eStatusCode.BAD_REQUEST));
   }
-  console.log(code + ":" + user.lastVerificationSMSCode);
+  console.log(code + ':' + user.lastVerificationSMSCode);
 
   // 4. Check if code matches
   if (!user.correctSMSCode(code, user.lastVerificationSMSCode)) {
-    return next(new AppError("Code did not match", eStatusCode.FORBIDDEN));
+    return next(new AppError('Code did not match', eStatusCode.FORBIDDEN));
   }
   // 4. Update user verification status to true
   user.lastVerificationSMSCode = undefined;
@@ -249,8 +249,8 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
 
   // 5. Send response
   res.status(eStatusCode.SUCCESS).json({
-    status: "success",
-    message: "Your phone number is verified",
+    status: 'success',
+    message: 'Your phone number is verified',
     data: user,
   });
 });
@@ -265,9 +265,9 @@ const protect = catchAsync(async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
+    req.headers.authorization.startsWith('Bearer')
   ) {
-    token = req.headers.authorization.split(" ")[1];
+    token = req.headers.authorization.split(' ')[1];
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
@@ -275,7 +275,7 @@ const protect = catchAsync(async (req, res, next) => {
   if (!token) {
     return next(
       new AppError(
-        "You are not logged in! Please log in to get access.",
+        'You are not logged in! Please log in to get access.',
         eStatusCode.FORBIDDEN
       )
     );
@@ -285,12 +285,12 @@ const protect = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, config.jwt.secret);
 
   // 3) Check if user still exists
-  const currentuser = await User.findById(decoded.user._id);
+  const currentuser = await User.findById(decoded.id);
 
   if (!currentuser) {
     return next(
       new AppError(
-        "The user belonging to this token does no longer exist.",
+        'The user belonging to this token does no longer exist.',
         eStatusCode.FORBIDDEN
       )
     );
@@ -300,7 +300,7 @@ const protect = catchAsync(async (req, res, next) => {
   if (currentuser.changedPasswordAfter(decoded.iat)) {
     return next(
       new AppError(
-        "User recently changed password! Please log in again.",
+        'User recently changed password! Please log in again.',
         eStatusCode.FORBIDDEN
       )
     );
@@ -323,7 +323,7 @@ const restrictTo = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError(
-          "You do not have permission to perform this action",
+          'You do not have permission to perform this action',
           eStatusCode.UN_AUTHORIZED
         )
       );
@@ -341,7 +341,7 @@ const restrictToVerified = (req, res, next) => {
   if (!req.user.phoneValidated && !req.user.emailValidated) {
     return next(
       new AppError(
-        "Your are not allowed to performed this action, please authenticate your contact /verifyMe",
+        'Your are not allowed to performed this action, please authenticate your contact /verifyMe',
         eStatusCode.UN_AUTHORIZED
       )
     );
@@ -374,12 +374,12 @@ const updatePhone = catchAsync(async (req, res, next) => {
  */
 const updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
-  const user = await User.findById(req.user.id).select("+password");
+  const user = await User.findById(req.user.id).select('+password');
 
   // 2) Check if POSTed current password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     return next(
-      new AppError("Your current password is wrong.", eStatusCode.FORBIDDEN)
+      new AppError('Your current password is wrong.', eStatusCode.FORBIDDEN)
     );
   }
 
