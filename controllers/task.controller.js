@@ -12,6 +12,7 @@ import {
   CONST_ZEROU,
   MAX_PROVIDER_DISTANCE,
 } from '../utilities/constants/index.js';
+import { response } from 'express';
 
 const setTaskUserId = (req, res, next) => {
   if (!req.body.user) req.body.user = req.user.id;
@@ -177,6 +178,31 @@ const toggleTaskStatus = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * @breif Delete task from current task list
+ */
+const deleteTask = catchAsync(async (req, res, next) => {
+  // 1. Find task
+  const task = await Task.findByIdAndDelete(req.params.id);
+
+  // 2. Check if task exists
+  if (!task) {
+    return next(new AppError('Task not found!', eStatusCode.NOT_FOUND));
+  }
+  // 3. Notify the user
+  io.emit('task:delete', {
+    data: task,
+    message: `This task has been deleted!`,
+  });
+
+  // 4. Send response
+  res.status(204).json({
+    status: 'success',
+    message: 'Task has been deleted!',
+    data: null,
+  });
+});
+
 export default {
   setTaskUserId,
   createTask,
@@ -184,5 +210,5 @@ export default {
   getAllTasks: factory.getAll(Task),
   getTask: factory.getOne(Task),
   updateTask: factory.updateOne(Task),
-  deleteTask: factory.deleteOne(Task),
+  deleteTask,
 };
