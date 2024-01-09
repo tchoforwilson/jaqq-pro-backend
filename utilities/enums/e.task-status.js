@@ -9,5 +9,5 @@ export default {
   PROGRESS: 'In progress',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
-  DONE: 'Approved',
+  APPROVED: 'Approved',
 };
