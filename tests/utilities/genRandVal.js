@@ -1,14 +1,14 @@
 /* eslint-disable node/no-missing-import */
 // eslint-disable-next-line node/no-unpublished-import
-import randomstring from "randomstring";
+import randomstring from 'randomstring';
 /* eslint-disable node/no-missing-import */
 // eslint-disable-next-line node/no-unpublished-import
-import random from "random";
+import random from 'random';
 /* eslint-disable node/no-missing-import */
 // eslint-disable-next-line node/no-unpublished-import, import/no-extraneous-dependencies
-import randomItem from "random-item";
+import randomItem from 'random-item';
 
-import momentRandom from "moment-random";
+import momentRandom from 'moment-random';
 
 const smallMinAmount = 1000;
 const smallMaxAmount = 100000;
@@ -55,8 +55,8 @@ class RandomVal {
   GenRandomValidString(len) {
     return randomstring.generate({
       length: len,
-      charset: "alphabetic",
-      capitalization: "lowercase",
+      charset: 'alphabetic',
+      capitalization: 'lowercase',
     });
   }
 
@@ -69,7 +69,7 @@ class RandomVal {
   GenRandomValidStringInRange(min, max) {
     return randomstring.generate({
       length: this.GenRandomIntegerInRange(min, max),
-      charset: "alphabetic",
+      charset: 'alphabetic',
     });
   }
 
@@ -81,8 +81,8 @@ class RandomVal {
   GenRandomInValidString(len) {
     return randomstring.generate({
       length: len,
-      charset: "alphanumeric",
-      capitalization: "lowercase",
+      charset: 'alphanumeric',
+      capitalization: 'lowercase',
     });
   }
 
@@ -112,7 +112,7 @@ class RandomVal {
   GenRandomValidText(len) {
     return randomstring.generate({
       length: len,
-      charset: "alphanumeric",
+      charset: 'alphanumeric',
     });
   }
 
@@ -140,8 +140,8 @@ class RandomVal {
    * @returns {String}
    */
   GenRandomValidEmail() {
-    const exts = [".org", ".com", ".net"]; // email extensions
-    const types = ["@gmail", "@yahoo", "@hotmail", "@outlooks"]; // email types
+    const exts = ['.org', '.com', '.net']; // email extensions
+    const types = ['@gmail', '@yahoo', '@hotmail', '@outlooks']; // email types
     const ext = this.GenRandomItem(exts);
     const type = this.GenRandomItem(types);
     const str = this.GenRandomValidString(
@@ -157,11 +157,11 @@ class RandomVal {
   GenRandomInValidEmail() {
     const str = this.GenRandomValidString(this.GenRandomInteger(CONST_MAX_INT));
     if (this.GenRandomBoolean()) {
-      const types = ["@gmail", "@yahoo", "@hotmail"];
+      const types = ['@gmail', '@yahoo', '@hotmail'];
       const type = this.GenRandomItem(types);
       str.concat(type);
     } else {
-      const exts = [".org", ".com", ".net"];
+      const exts = ['.org', '.com', '.net'];
       const ext = this.GenRandomItem(exts);
       str.concat(ext);
     }
@@ -174,10 +174,12 @@ class RandomVal {
    * @returns {String}
    */
   GenRandomValidTelephone() {
-    return randomstring.generate({
+    const code = '+237';
+    let str = randomstring.generate({
       length: 9,
-      charset: "numeric",
+      charset: 'numeric',
     });
+    return code + str;
   }
 
   /**
@@ -188,7 +190,7 @@ class RandomVal {
     const len = random.generate(CONST_MIN_INT, CONST_MAX_INT);
     const str = randomstring.generate({
       length: len,
-      charset: "numeric",
+      charset: 'numeric',
     });
     return str;
   }
@@ -198,7 +200,7 @@ class RandomVal {
    * @returns {String}
    */
   GenRandomValidDateOfBirth() {
-    return momentRandom("01-01-1970", new Date(Date.now()));
+    return momentRandom('01-01-1970', new Date(Date.now()));
   }
 
   /**
@@ -206,8 +208,16 @@ class RandomVal {
    * @returns {String}
    */
   GenRandomValidGender() {
-    const genders = ["male", "female"];
+    const genders = ['Male', 'Female'];
     return this.GenRandomItem(genders);
+  }
+
+  /**
+   * @breif Generate random user role
+   */
+  GenRandomValidUserRole() {
+    const roles = ['User', 'Provider'];
+    return this.GenRandomItem(roles);
   }
 
   /**
@@ -215,7 +225,7 @@ class RandomVal {
    * @returns {String}
    */
   GenRandomInValidGender() {
-    const genders = ["Unknown", "Invalid"];
+    const genders = ['Unknown', 'Invalid'];
     return this.GenRandomItem(genders);
   }
 
@@ -224,7 +234,7 @@ class RandomVal {
    * @returns {String}
    */
   GenRandomValidPhoto() {
-    const extensions = [".png", ".jpeg", ".jpg", ".gif"]; // image extension
+    const extensions = ['.png', '.jpeg', '.jpg', '.gif']; // image extension
     const ext = this.GenRandomItem(extensions);
     const str = this.GenRandomValidStringInRange(CONST_MIN_INT, CONST_MAX_INT);
     return str.concat(ext);
