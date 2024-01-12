@@ -32,7 +32,7 @@ const reassignTasks = handleAsync(async () => {
   // 2. If there are any tasks, assign them
   if (tasks.length > CONST_ZEROU) {
     for (const task of tasks) {
-      await assignedTaskToProvider(task);
+      assignedTaskToProvider(task);
     }
   }
 });
