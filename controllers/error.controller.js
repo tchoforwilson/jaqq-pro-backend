@@ -1,5 +1,5 @@
-import AppError from "../utilities/appError.js";
-import config from "../configurations/config.js";
+import AppError from '../utilities/appError.js';
+import config from '../configurations/config.js';
 
 /**
  * @breif Handle cast error, i.e error resulting from
@@ -39,7 +39,7 @@ const handleValidationErrorDB = (err) => {
   // 1. Extract error
   const errors = Object.values(err.errors).map((el) => el.message);
   // 2. Buiild error message
-  const message = `Invalid input data. ${errors.join(". ")}`;
+  const message = `Invalid input data. ${errors.join('. ')}`;
   // 3. Return error message
   return new AppError(message, 400);
 };
@@ -49,14 +49,14 @@ const handleValidationErrorDB = (err) => {
  * @returns AppError message
  */
 const handleJWTError = () =>
-  new AppError("Invalid token. Please log in again!", 401);
+  new AppError('Invalid token. Please log in again!', 401);
 
 /**
  * @breif handle JWT token expires error, when the JWT token has expired
  * @returns AppError message
  */
 const handleJWTExpiredError = () =>
-  new AppError("Your token has expired! Please log in again.", 401);
+  new AppError('Your token has expired! Please log in again.', 401);
 
 /**
  * @breif Handle file error messages, like images if the suppase the maximum size
@@ -76,7 +76,7 @@ const handleFileError = (err) => {
  * @returns JSON error message
  */
 const sendErrorDev = (err, req, res) => {
-  if (req.originalUrl.startsWith("/api")) {
+  if (req.originalUrl.startsWith('/api')) {
     return res.status(err.statusCode).json({
       status: err.status,
       error: err,
@@ -97,7 +97,7 @@ const sendErrorDev = (err, req, res) => {
  * @returns JSON error message
  */
 const sendErrorProd = (err, req, res) => {
-  if (req.originalUrl.startsWith("/api")) {
+  if (req.originalUrl.startsWith('/api')) {
     // A) Operational, trusted error: send message to client
     if (err.isOperational) {
       return res.status(err.statusCode).json({
@@ -107,11 +107,11 @@ const sendErrorProd = (err, req, res) => {
     }
     // B) Programming or other unknown error: don't leak error details
     // 1. Log error
-    console.error("Error 💥", err);
+    console.error('Error 💥', err);
     // 2. Send generic message
     return res.status(500).json({
-      status: "error",
-      message: "Something went wrong!",
+      status: 'error',
+      message: 'Something went wrong!',
     });
   }
 };
@@ -121,20 +121,20 @@ const sendErrorProd = (err, req, res) => {
  */
 export default (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
-  err.status = err.status || "error";
+  err.status = err.status || 'error';
 
-  if (config.env === "development" || config.env === "test") {
+  if (config.env === 'development' || config.env === 'test') {
     sendErrorDev(err, req, res);
-  } else if (config.env === "production") {
+  } else if (config.env === 'production') {
     let error = err;
 
-    if (error.name === "CastError") error = handleCastErrorDB(error);
+    if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-    if (error.code === "LIMIT_FILE_SIZE") error = handleFileError(error);
-    if (error.name === "ValidationError")
+    if (error.code === 'LIMIT_FILE_SIZE') error = handleFileError(error);
+    if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
-    if (error.name === "JsonWebTokenError") error = handleJWTError();
-    if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
+    if (error.name === 'JsonWebTokenError') error = handleJWTError();
+    if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
     sendErrorProd(error, req, res);
   }
