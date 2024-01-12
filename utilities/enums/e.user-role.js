@@ -3,7 +3,7 @@
  */
 
 export default {
-  ADMIN: "ADMIN",
-  USER: "USER",
-  PROVIDER: "PROVIDER",
+  ADMIN: 'Admin',
+  USER: 'User',
+  PROVIDER: 'Provider',
 };
