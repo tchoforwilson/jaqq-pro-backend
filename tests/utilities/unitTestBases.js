@@ -1,26 +1,43 @@
-import GenRandomVal from "./genRandVal.js";
+import GenRandomVal from './genRandVal.js';
 
-const secretMinLength = 12;
+const secretMinLength = 8;
 const secretMaxLength = 12;
-const smallMinLength = 5;
+const smallMinLength = 10;
 const smallMaxLength = 30;
 
 class UnitTest {
+  /**
+   * @breif Generates a random service
+   * @returns {String}
+   */
+  GenRandomService() {
+    return { label: GenRandomVal.GenRandomValidString(smallMaxLength) };
+  }
+
+  /**
+   * @breif Generates a random number of services
+   * @param {Number} count Number of services to generate
+   * @returns {Array<String>}
+   */
+  GenRandomServices(count) {
+    let services = [];
+    for (let i = 0; i < count; i++) {
+      services[i] = this.GenRandomService();
+    }
+    return services;
+  }
   /**
    * Generate random valid user
    * @returns {Object} user
    */
   GenRandomValidUser() {
-    const user = {
-      firstName: GenRandomVal.GenRandomValidString(smallMaxLength),
-      lastName: GenRandomVal.GenRandomValidString(smallMaxLength),
+    return {
+      firstname: GenRandomVal.GenRandomValidString(smallMaxLength),
+      lastname: GenRandomVal.GenRandomValidString(smallMaxLength),
       gender: GenRandomVal.GenRandomValidGender(),
-      contact: { telephone: GenRandomVal.GenRandomValidTelephone() },
       email: GenRandomVal.GenRandomValidEmail(),
-      dateOfBirth: GenRandomVal.GenRandomValidDate(),
-      photo: GenRandomVal.GenRandomValidPhoto(),
+      role: GenRandomVal.GenRandomValidUserRole(),
     };
-    return user;
   }
 
   /**
@@ -38,27 +55,6 @@ class UnitTest {
   }
 
   /**
-   * @breif Generate random valid Provider
-   * @returns {Object}
-   */
-  GenRandomValidProvider() {
-    return this.GenRandomValidUserWithPassword();
-  }
-
-  /**
-   * @breif Generate random valid providers
-   * @param {Number} max -> Maximum number of providers
-   * @param {Array}
-   */
-  GenRandomValidProviders(max) {
-    const providers = new Array(max);
-    for (let i = 0; i < providers.length; i++) {
-      providers.push(this.GenRandomValidProvider());
-    }
-    return providers;
-  }
-
-  /**
    * Generate valid users
    * @param {Number} max -> Maximum number of user to be generated
    * @returns {Array} users -> Generated users
@@ -71,26 +67,29 @@ class UnitTest {
     return users;
   }
   /**
-   * @breif Generate random valid tasks
-   * @param {Array} providerIds -> ID lists of task providers
+   * @breif Generate a random valid task
+   * @param {Array} serviceId Task service id
    * @return {Object}
    */
-  GenRandomValidTask(providerIds) {
-    const task = {};
-    task.label = GenRandomVal.GenRandomValidString(smallMaxLength);
-    providerIds.forEach((el) => task.providers.push(el));
-    return task;
+  GenRandomValidTask(serviceId) {
+    return {
+      label: GenRandomVal.GenRandomValidString(smallMaxLength),
+      service: serviceId,
+    };
   }
+
   /**
-   * @breif Generate random invalid task
-   * @param {Array} providerIds -> Provider Ids
-   * @returns {Object}
+   * @breif Generate a random array of tasks
+   * @param {Array<String>} serviceIds
+   * @param {Number} len
+   * @returns {Array<Object>}
    */
-  GenRandomInvalidTask(providerIds) {
-    const task = {};
-    task.label = GenRandomVal.GenRandomInValidString(smallMaxLength);
-    providerIds.forEach((el) => task.providers.push(el));
-    return task;
+  GenRandomValidTasks(serviceIds, len) {
+    let tasks = [];
+    for (let i = 0; i < len; i++) {
+      this.GenRandomValidTask(serviceIds[i]);
+    }
+    return tasks;
   }
 
   /**
