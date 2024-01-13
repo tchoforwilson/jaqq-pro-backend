@@ -12,7 +12,7 @@ import { SMS_LENGTH } from '../utilities/constants/index.js';
 
 /**
  * @breif Generate user jwt token from user object
- * @param {Object} user -> user (user or provider) object
+ * @param {Object} id -> Current user id to generate jwt token
  * @returns JWT
  */
 const signToken = (id) =>
