@@ -7,6 +7,7 @@ import random from 'random';
 /* eslint-disable node/no-missing-import */
 // eslint-disable-next-line node/no-unpublished-import, import/no-extraneous-dependencies
 import randomItem from 'random-item';
+import ObjectID from 'bson-objectid';
 
 import momentRandom from 'moment-random';
 
@@ -20,6 +21,13 @@ const CONST_MIN_INT = Number(5);
 const CONST_MAX_INT = Number(30);
 
 class RandomVal {
+  /**
+   * @breif Generate a random valid Mongo Object ID
+   */
+  GenRandomValidID() {
+    return ObjectID();
+  }
+
   /**
    * @breif Generate a boolean value
    * @returns {Boolean}
@@ -151,24 +159,6 @@ class RandomVal {
   }
 
   /**
-   * @breif Generate random invalid email
-   * @returns {String}
-   */
-  GenRandomInValidEmail() {
-    const str = this.GenRandomValidString(this.GenRandomInteger(CONST_MAX_INT));
-    if (this.GenRandomBoolean()) {
-      const types = ['@gmail', '@yahoo', '@hotmail'];
-      const type = this.GenRandomItem(types);
-      str.concat(type);
-    } else {
-      const exts = ['.org', '.com', '.net'];
-      const ext = this.GenRandomItem(exts);
-      str.concat(ext);
-    }
-    return str;
-  }
-
-  /**
    * @breif Generate a random valid telephone number,
    * NB: contact length is 9 to be valid
    * @returns {String}
@@ -180,19 +170,6 @@ class RandomVal {
       charset: 'numeric',
     });
     return code + str;
-  }
-
-  /**
-   * @breif Generate a random invalid telephone number
-   * @returns {String}
-   */
-  GenRandomInValidTelephone() {
-    const len = random.generate(CONST_MIN_INT, CONST_MAX_INT);
-    const str = randomstring.generate({
-      length: len,
-      charset: 'numeric',
-    });
-    return str;
   }
 
   /**
@@ -218,15 +195,6 @@ class RandomVal {
   GenRandomValidUserRole() {
     const roles = ['User', 'Provider'];
     return this.GenRandomItem(roles);
-  }
-
-  /**
-   * @breif Generate random invalid gender that is Unknown or Invalid
-   * @returns {String}
-   */
-  GenRandomInValidGender() {
-    const genders = ['Unknown', 'Invalid'];
-    return this.GenRandomItem(genders);
   }
 
   /**
