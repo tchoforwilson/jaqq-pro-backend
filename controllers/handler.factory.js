@@ -1,7 +1,7 @@
-import APIFeatures from "../utilities/apiFeatures.js";
-import AppError from "../utilities/appError.js";
-import catchAsync from "../utilities/catchAsync.js";
-import eStatusCode from "../utilities/enums/e.status-code.js";
+import APIFeatures from '../utilities/apiFeatures.js';
+import AppError from '../utilities/appError.js';
+import catchAsync from '../utilities/catchAsync.js';
+import eStatusCode from '../utilities/enums/e.status-code.js';
 
 /**
  * @breif Create a new document in a database collection
@@ -15,8 +15,8 @@ const createOne = (Model) =>
 
     // 2. Send response
     res.status(eStatusCode.CREATED).json({
-      status: "success",
-      message: "Successfully created",
+      status: 'success',
+      message: 'Successfully created',
       data: doc,
     });
   });
@@ -42,13 +42,13 @@ const getOne = (Model, popOptions) =>
     // 4. Check if item exists
     if (!doc)
       return next(
-        new AppError("document not found with that ID!", eStatusCode.NOT_FOUND)
+        new AppError('document not found with that ID!', eStatusCode.NOT_FOUND)
       );
 
     // 5. Send response
     res.status(eStatusCode.SUCCESS).json({
-      status: "success",
-      message: "Data receive successfully",
+      status: 'success',
+      message: 'Data receive successfully',
       data: doc,
     });
   });
@@ -70,13 +70,13 @@ const updateOne = (Model) =>
     // 2. Check if item exists
     if (!doc)
       return next(
-        new AppError("No document found with that ID!", eStatusCode.NOT_FOUND)
+        new AppError('No document found with that ID!', eStatusCode.NOT_FOUND)
       );
 
     // 3. Send response
     res.status(eStatusCode.SUCCESS).json({
-      status: "success",
-      message: "Successfully updated",
+      status: 'success',
+      message: 'Successfully updated',
       data: doc,
     });
   });
@@ -109,7 +109,7 @@ const getAll = (Model) =>
 
     // 4. SEND RESPONSE
     res.status(eStatusCode.SUCCESS).json({
-      status: "success",
+      status: 'success',
       results: docs.length,
       data: docs,
     });
@@ -128,14 +128,14 @@ const deleteOne = (Model) =>
     // 2. Check if item exists
     if (!doc) {
       return next(
-        new AppError("No document found with that ID", eStatusCode.NOT_FOUND)
+        new AppError('No document found with that ID', eStatusCode.NOT_FOUND)
       );
     }
 
     // 3. Send response
     res.status(eStatusCode.NO_CONTENT).json({
-      status: "success",
-      message: "Successfully deleted",
+      status: 'success',
+      message: 'Successfully deleted',
       data: null,
     });
   });
@@ -153,16 +153,16 @@ const search = (Model) =>
     // 2. Get the results
     const results = await Model.find({
       $or: [
-        { firstName: { $regex: q, $options: "i" } },
-        { lastName: { $regex: q, $options: "i" } },
-        { phone: { $regex: q, $options: "i" } },
-        { label: { $regex: q, $options: "i" } },
+        { firstName: { $regex: q, $options: 'i' } },
+        { lastName: { $regex: q, $options: 'i' } },
+        { phone: { $regex: q, $options: 'i' } },
+        { label: { $regex: q, $options: 'i' } },
       ],
     });
 
     // 3. Send the response
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: results,
     });
   });
@@ -178,6 +178,8 @@ const count = (Model) =>
     let filtered = {};
     if (req.params.userId) filtered.category = req.params.userId;
     if (req.params.taskId) filtered.store = req.params.taskId;
+    if (req.params.serviceId) filtered.service = req.params.serviceId;
+    if (req.params.reviewId) filtered.review = req.params.reviewId;
     if (req.params.pricingId) filtered.product = req.params.pricingId;
 
     // 2. Create search query
@@ -188,7 +190,7 @@ const count = (Model) =>
 
     // 4. Send response
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: count,
     });
   });
