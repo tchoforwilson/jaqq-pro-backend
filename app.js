@@ -16,6 +16,7 @@ import userRouter from './routes/user.routes.js';
 import taskRouter from './routes/task.routes.js';
 import serviceRouter from './routes/service.routes.js';
 import pricingRouter from './routes/pricing.routes.js';
+import reviewRouter from './routes/review.routes.js';
 
 // Start express app
 const app = express();
@@ -60,6 +61,7 @@ app.use(`${config.prefix}/auth`, authRouter);
 app.use(`${config.prefix}/users`, userRouter);
 app.use(`${config.prefix}/tasks`, taskRouter);
 app.use(`${config.prefix}/services`, serviceRouter);
+app.use(`${config.prefix}/reviews`, reviewRouter);
 app.use(`${config.prefix}/pricings`, pricingRouter);
 
 // Socket Connections
