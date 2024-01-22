@@ -72,6 +72,7 @@ const userSchema = new Schema(
     connectionId: String,
     lastConnection: Date,
     location: pointSchema,
+    currentLocation: pointSchema,
     password: {
       type: String,
       required: [true, 'Please provide a password!'],
