@@ -7,7 +7,7 @@ export default {
   ACCEPTED: 'Accepted',
   REJECTED: 'Rejected',
   PROGRESS: 'In progress',
-  COMPLETED: 'Completed',
+  READY: 'Ready',
   CANCELLED: 'Cancelled',
   APPROVED: 'Approved',
 };
