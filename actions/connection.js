@@ -41,6 +41,18 @@ export default catchSocketAsync(async (socket) => {
   // 7. Emit user:connected event
   socket.emit('connected', { data: currentuser });
 
+  /**
+   * @bref Current user location
+   */
+  socket.on('currentLocation', async (location) => {
+    currentuser.currentLocation = location;
+    await currentuser.save({ validateBeforeSave: false });
+    socket.emit('currentLocation:updated', { data: currentuser });
+  });
+
+  /**
+   * @breif When user disconnects from server
+   */
   socket.on('disconnect', async () => {
     await User.findOneAndUpdate(
       { connectionId: socket.id },
