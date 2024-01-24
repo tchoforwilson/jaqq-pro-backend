@@ -13,6 +13,7 @@ import {
   CONST_ZEROU,
   MAX_PROVIDER_DISTANCE,
 } from '../utilities/constants/index.js';
+import eStatusCode from '../utilities/enums/e.status-code.js';
 
 /**
  * @breif Set task user id
@@ -123,22 +124,97 @@ const createTask = catchAsync(async (req, res, next) => {
   });
 });
 
+const checkIfTaskExists = catchAsync(async (req, res, next) => {
+  // 1. Get the task
+  const task = await Task.findById(req.params.id);
+  // 2. Check task exists
+  if (!task) return next(new AppError('Task not found', eStatusCode.NOT_FOUND));
+  // 3. next
+  req.task = task;
+  next();
+});
+
+const setTaskReady = catchAsync(async (req, res, next) => {
+  // 1. Get task
+  const task = req.task;
+
+  // 2. Update task status
+  const updatedTask = await Task.findByIdAndUpdate(task.id, {
+    status: eTaskStatus.READY,
+  });
+
+  // 3. Send response
+  // a. To user
+  io.emit('task:ready', { data: updatedTask, message: 'Task is ready!' });
+  // b.To Provider
+  res.status(200).json({
+    status: 'success',
+    message: 'Task set to ready!',
+    data: updatedTask,
+  });
+});
+
+const setTaskApproved = catchAsync(async (req, res, next) => {
+  // 1. Get task
+  const task = req.task;
+
+  // 2. Update task status
+  const updatedTask = await Task.findByIdAndUpdate(task.id, {
+    status: eTaskStatus.APPROVED,
+  });
+
+  // 4. Move payment to user account
+
+  // 4. Send response
+  // a. To user
+  io.emit('task:approved', { data: updatedTask, message: 'Task approved!' });
+  // b.To Provider
+  res.status(200).json({
+    status: 'success',
+    message: 'Task is approved!',
+    data: updatedTask,
+  });
+});
+
+const setTaskCancell = catchAsync(async (req, res, next) => {
+  // 1. Get task
+  const task = req.task;
+
+  // 2. Check if task is in progress
+  if (task.status === eTaskStatus.PROGRESS) {
+    return next(
+      new AppError(
+        'Task is already in progress, cannot be cancelled',
+        eStatusCode.BAD_REQUEST
+      )
+    );
+  }
+
+  // 3. Update task status
+  const updatedTask = await Task.findByIdAndUpdate(task.id, {
+    status: eTaskStatus.CANCELLED,
+  });
+
+  // 4. Deduce from customer account
+
+  // 4. Send response
+  // a. To user
+  io.emit('task:cancelled', { data: updatedTask, message: 'Task cancelled!' });
+
+  // b.To Provider
+  res.status(200).json({
+    status: 'success',
+    message: 'Task is cancelled!',
+    data: updatedTask,
+  });
+});
+
 /**
  * @breif Change task status
  */
 const toggleTaskStatus = catchAsync(async (req, res, next) => {
-  // 1. Get the task
-  const task = await Task.findById(req.params.taskId);
-
-  // 2. Check if task exist
-  if (!task) {
-    return next(
-      new AppError(
-        `Task with ID ${req.params.id} not found`,
-        eStatusCode.NOT_FOUND
-      )
-    );
-  }
+  // 1. Get task
+  const task = req.task;
 
   const { status } = req.body; // get new status
   task.status = status;
@@ -175,14 +251,6 @@ const toggleTaskStatus = catchAsync(async (req, res, next) => {
     case status === eTaskStatus.PROGRESS:
       io.emit('task:in-progress', { data: task, message: 'Task in progress!' });
       break;
-    // Provider completes task
-    case status === eTaskStatus.COMPLETED:
-      io.emit('task:completed', { data: task, message: 'Task completed!' });
-      break;
-    // User approves task
-    case status === eTaskStatus.APPROVED:
-      io.emit('task:approved', { data: task, message: 'Task completed!' });
-      break;
     default:
       await task.save();
   }
@@ -201,15 +269,14 @@ const toggleTaskStatus = catchAsync(async (req, res, next) => {
  * @breif Delete task from current task list
  */
 const deleteTask = catchAsync(async (req, res, next) => {
-  // 1. Find task
-  const task = await Task.findByIdAndDelete(req.params.id);
+  // 1. Get task
+  const task = req.task;
 
-  // 2. Check if task exists
-  if (!task) {
-    return next(new AppError('Task not found!', eStatusCode.NOT_FOUND));
-  }
-  // 3. Notify the user
-  io.emit('task:delete', {
+  // 2. Find task and delete
+  await Task.findByIdAndDelete(task.id);
+
+  // 3. Notify the provider
+  io.emit('task:deleted', {
     data: task,
     message: `This task has been deleted!`,
   });
@@ -224,7 +291,11 @@ const deleteTask = catchAsync(async (req, res, next) => {
 
 export default {
   setTaskUserId,
+  checkIfTaskExists,
   createTask,
+  setTaskReady,
+  setTaskApproved,
+  setTaskCancell,
   toggleTaskStatus,
   getAllTasks: factory.getAll(Task),
   getTask: factory.getOne(Task),
