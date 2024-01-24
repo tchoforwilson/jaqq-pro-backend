@@ -79,15 +79,15 @@ reviewSchema.post('save', function () {
   this.constructor.calcAverageRatings(this.provider);
 });
 
-// findByIdAndUpdate
-// findByIdAndDelete
+// // findByIdAndUpdate
+// // findByIdAndDelete
 reviewSchema.pre(/^findOneAnd/, async function (next) {
-  this.r = await this.findOne();
+  // await this.findOne(); does NOT work here, query has already executed
+  this.r = await this.findOne().clone();
   next();
 });
 
 reviewSchema.post(/^findOneAnd/, async function () {
-  console.log('First 3');
   // await this.findOne(); does NOT work here, query has already executed
   await this.r.constructor.calcAverageRatings(this.r.provider);
 });
