@@ -139,7 +139,7 @@ const setTaskReady = catchAsync(async (req, res, next) => {
   const task = req.task;
 
   // 2. Update task status
-  const updatedTask = await Task.findByIdAndUpdate(task.id, {
+  const updatedTask = await Task.findByIdAndUpdate(task._id, {
     status: eTaskStatus.READY,
   });
 
@@ -159,7 +159,7 @@ const setTaskApproved = catchAsync(async (req, res, next) => {
   const task = req.task;
 
   // 2. Update task status
-  const updatedTask = await Task.findByIdAndUpdate(task.id, {
+  const updatedTask = await Task.findByIdAndUpdate(task._id, {
     status: eTaskStatus.APPROVED,
   });
 
@@ -191,7 +191,7 @@ const setTaskCancell = catchAsync(async (req, res, next) => {
   }
 
   // 3. Update task status
-  const updatedTask = await Task.findByIdAndUpdate(task.id, {
+  const updatedTask = await Task.findByIdAndUpdate(task._id, {
     status: eTaskStatus.CANCELLED,
   });
 
