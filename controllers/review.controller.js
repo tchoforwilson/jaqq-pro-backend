@@ -24,7 +24,7 @@ export default {
   setUserTaskIds,
   createReview: factory.createOne(Review),
   getAllReviews: factory.getAll(Review),
-  getReview: factory.getOne(Review, { path: 'provider', select: '-__v' }),
+  getReview: factory.getOne(Review),
   updateReview: factory.updateOne(Review),
   deleteReview: factory.deleteOne(Review),
 };
