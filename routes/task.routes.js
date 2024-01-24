@@ -8,9 +8,28 @@ const router = Router({ mergeParams: true });
 router.use(authController.protect);
 
 router.patch(
-  '/:taskId/set-status',
+  '/:id/set-status',
   authController.restrictTo(eUserRole.PROVIDER, eUserRole.USER),
   taskController.toggleTaskStatus
+);
+
+router.patch(
+  '/:id/ready',
+  authController.restrictTo(eUserRole.PROVIDER),
+  taskController.checkIfTaskExists,
+  taskController.setTaskReady
+);
+router.patch(
+  '/:id/approve',
+  authController.restrictTo(eUserRole.USER),
+  taskController.checkIfTaskExists,
+  taskController.setTaskApproved
+);
+router.patch(
+  '/:id/cancel',
+  authController.restrictTo(eUserRole.USER),
+  taskController.checkIfTaskExists,
+  taskController.setTaskCancell
 );
 
 router
@@ -32,6 +51,7 @@ router
   )
   .delete(
     authController.restrictTo(eUserRole.ADMIN, eUserRole.USER),
+    taskController.checkIfTaskExists,
     taskController.deleteTask
   );
 
