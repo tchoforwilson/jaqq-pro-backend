@@ -33,6 +33,16 @@ const reviewSchema = new Schema(
   }
 );
 
+reviewSchema.index({ task: 1, provider: 1 }, { unique: true });
+
+reviewSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'task',
+    select: 'service location',
+  });
+  next();
+});
+
 /**
  * @breif Calculate the average user rating
  * @param {String} providerId The provider id of the current user
@@ -77,16 +87,9 @@ reviewSchema.pre(/^findOneAnd/, async function (next) {
 });
 
 reviewSchema.post(/^findOneAnd/, async function () {
+  console.log('First 3');
   // await this.findOne(); does NOT work here, query has already executed
   await this.r.constructor.calcAverageRatings(this.r.provider);
-});
-
-reviewSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: 'task',
-    select: '-__v',
-  });
-  next();
 });
 
 const Review = model('Review', reviewSchema);
