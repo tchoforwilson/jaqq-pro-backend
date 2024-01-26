@@ -47,7 +47,10 @@ export default catchSocketAsync(async (socket) => {
   socket.on('currentLocation', async (location) => {
     currentuser.currentLocation = location;
     await currentuser.save({ validateBeforeSave: false });
-    socket.emit('currentLocation:updated', { data: currentuser });
+    socket.emit('currentLocation:updated', {
+      message: 'Current location updated!',
+      data: currentuser,
+    });
   });
 
   /**
