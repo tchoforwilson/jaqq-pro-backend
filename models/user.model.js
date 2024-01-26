@@ -171,14 +171,6 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-// userSchema.pre(/^find/, function (next) {
-//   this.populate({
-//     path: "services",
-//     select: "label",
-//   });
-//   next();
-// });
-
 const User = model('User', userSchema);
 
 export default User;
