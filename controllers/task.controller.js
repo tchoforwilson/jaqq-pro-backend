@@ -134,6 +134,36 @@ const checkIfTaskExists = catchAsync(async (req, res, next) => {
   next();
 });
 
+const setInProgress = catchAsync(async (req, res, next) => {
+  // 1. Get task
+  const task = req.task;
+
+  // 2. Check if user location and task are same
+  const result = await task.atTaskLocation(req.user.currentLocation);
+  if (!result) {
+    return next(
+      new AppError('Your are not yet close to task', eStatusCode.BAD_REQUEST)
+    );
+  }
+
+  // 3. Update task by setting to in progess
+  const updatedTask = await Task.findByIdAndUpdate(task._id, {
+    status: eTaskStatus.PROGRESS,
+  });
+
+  // 4. Emit to user
+  io.emit('task:in-progress', {
+    message: 'Task set to in progess',
+    data: updatedTask,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Task updated successfully to in progress',
+    data: updatedTask,
+  });
+});
+
 const setTaskReady = catchAsync(async (req, res, next) => {
   // 1. Get task
   const task = req.task;
@@ -293,6 +323,7 @@ export default {
   setTaskUserId,
   checkIfTaskExists,
   createTask,
+  setInProgress,
   setTaskReady,
   setTaskApproved,
   setTaskCancell,
