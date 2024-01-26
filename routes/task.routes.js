@@ -14,6 +14,13 @@ router.patch(
 );
 
 router.patch(
+  '/:id/in-progress',
+  authController.restrictTo(eUserRole.PROVIDER),
+  taskController.checkIfTaskExists,
+  taskController.setInProgress
+);
+
+router.patch(
   '/:id/ready',
   authController.restrictTo(eUserRole.PROVIDER),
   taskController.checkIfTaskExists,
