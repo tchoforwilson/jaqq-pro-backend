@@ -147,9 +147,16 @@ const setInProgress = catchAsync(async (req, res, next) => {
   }
 
   // 3. Update task by setting to in progess
-  const updatedTask = await Task.findByIdAndUpdate(task._id, {
-    status: eTaskStatus.PROGRESS,
-  });
+  const updatedTask = await Task.findByIdAndUpdate(
+    task._id,
+    {
+      status: eTaskStatus.PROGRESS,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   // 4. Emit to user
   io.emit('task:in-progress', {
@@ -169,9 +176,16 @@ const setTaskReady = catchAsync(async (req, res, next) => {
   const task = req.task;
 
   // 2. Update task status
-  const updatedTask = await Task.findByIdAndUpdate(task._id, {
-    status: eTaskStatus.READY,
-  });
+  const updatedTask = await Task.findByIdAndUpdate(
+    task._id,
+    {
+      status: eTaskStatus.READY,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   // 3. Send response
   // a. To user
@@ -189,9 +203,16 @@ const setTaskApproved = catchAsync(async (req, res, next) => {
   const task = req.task;
 
   // 2. Update task status
-  const updatedTask = await Task.findByIdAndUpdate(task._id, {
-    status: eTaskStatus.APPROVED,
-  });
+  const updatedTask = await Task.findByIdAndUpdate(
+    task._id,
+    {
+      status: eTaskStatus.APPROVED,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   // 4. Move payment to user account
 
@@ -291,6 +312,7 @@ const toggleTaskStatus = catchAsync(async (req, res, next) => {
   // 5. Send response
   res.status(200).json({
     status: 'success',
+    message: `Task status changed to ${task.status}`,
     data: task,
   });
 });
