@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { getDistance } from 'geolib';
 import pointSchema from '../schemas/point.schema.js';
 import eTaskStatus from '../utilities/enums/e.task-status.js';
 
@@ -81,24 +82,20 @@ taskSchema.pre(/^find/, function (next) {
  * @returns {Boolean} true distance are 2 meters apart else false
  */
 taskSchema.methods.atTaskLocation = function (providerCurrentLocation) {
-  const earthRadius = 6371; // Radius of the earth in kilometers
-  const [lon1, lat1] = this.location.coordinates;
-  const [lon2, lat2] = providerCurrentLocation.coordinates;
+  // 1. Get coordinates
+  const coord1 = {
+    latitude: this.location.coordinates[0],
+    longitude: this.location.coordinates[1],
+  };
+  const coord2 = {
+    latitude: providerCurrentLocation.coordinates[0],
+    longitude: providerCurrentLocation.coordinates[1],
+  };
 
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  // 2. Calculate the distance in meters
+  const distance = getDistance(coord1, coord2);
 
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = earthRadius * c * 1000; // Distance in meters
-
-  console.log(distance);
-
+  // 3. Check if the distance is less than 2 meters
   return distance <= 2;
 };
 
