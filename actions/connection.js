@@ -34,7 +34,7 @@ export default catchSocketAsync(async (socket) => {
 
   // 6. Update user connection
   currentuser.online = true;
-  currentuser.lastConnection = new Date(Date.now());
+  currentuser.lastConnection = Date.now();
   currentuser.connectionId = socket.id;
   await currentuser.save({ validateBeforeSave: false });
 
@@ -61,7 +61,7 @@ export default catchSocketAsync(async (socket) => {
       { connectionId: socket.id },
       {
         online: false,
-        lastConnection: new Date(Date.now()),
+        lastConnection: Date.now(),
         connectionId: null,
       }
     );
