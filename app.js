@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import http from 'http';
 import { Server } from 'socket.io';
 
+import swaggerDocs from './swagger.js';
 import config from './configurations/config.js';
 import globalErrorHandler from './controllers/error.controller.js';
 import onConnection from './actions/connection.js';
@@ -55,6 +56,9 @@ app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
+
+// Server swaggger documentation
+swaggerDocs(app);
 
 // ROUTES
 app.use(`${config.prefix}/auth`, authRouter);
