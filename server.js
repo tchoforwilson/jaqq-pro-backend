@@ -14,7 +14,7 @@ import app from './app.js';
 let DATABASE = config.db.dev;
 // Environment
 let env = config.env;
-if (env === 'production') {
+if (env === 'production' || env === 'development') {
   DATABASE = config.db.prod.replace('<PASSWORD>', config.db.password);
 }
 if (env === 'test') DATABASE = config.db.test;
