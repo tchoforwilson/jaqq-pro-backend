@@ -27,8 +27,7 @@ const server = http.createServer(app);
 // Socket IO
 export const io = new Server(server, {
   cors: {
-    origin:
-      config.env === 'production' ? false : ['*', 'http://localhost:3000'],
+    origin: config.env === 'production' ? false : ['*'],
   },
 });
 app.set('io', io);
