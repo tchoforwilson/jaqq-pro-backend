@@ -235,7 +235,6 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
   if (Date.now() > user.smsCodeExpiresAt) {
     return next(new AppError('Your code has expire!', eStatusCode.BAD_REQUEST));
   }
-  console.log(code + ':' + user.lastVerificationSMSCode);
 
   // 4. Check if code matches
   if (!user.correctSMSCode(code, user.lastVerificationSMSCode)) {
