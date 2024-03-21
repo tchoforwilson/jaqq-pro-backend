@@ -353,17 +353,21 @@ const restrictToVerified = (req, res, next) => {
  * The a new code is generate for the user to authenticate their contact
  */
 const updatePhone = catchAsync(async (req, res, next) => {
-  // 1. Modify phone
-  const updatedUser = await User.findByIdAndUpdate(
-    req.user.id,
-    {
-      phone: req.body.phone,
-      phoneValidated: false,
-    },
-    { new: true, runValidators: true }
-  );
+  // 1. Check if current phone number exists
+  const user = await User.findOne({ phone: req.body.phoneCurrent });
+  if (!user)
+    return next(
+      new AppError('Invalid current phone number!', eStatusCode.NOT_FOUND)
+    );
 
-  // 2. Generate and send contact verification code
+  // 2. Modify phone
+  user.phone = req.body.phone;
+  user.phoneValidated = false;
+
+  // 3. Save new data
+  await user.save({ validateBeforeSave: false });
+
+  // 4. Generate and send contact verification code
   generateAndSendSMSCode(req, res, next);
 });
 
