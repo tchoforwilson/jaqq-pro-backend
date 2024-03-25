@@ -71,6 +71,7 @@ const userSchema = new Schema(
     online: { type: Boolean, default: true },
     connectionId: String,
     lastConnection: Date,
+    pushToken: String,
     location: pointSchema,
     currentLocation: pointSchema,
     password: {
