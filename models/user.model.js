@@ -64,6 +64,10 @@ const userSchema = new Schema(
     },
     lastVerificationSMSCode: Number,
     smsCodeExpiresAt: Date,
+    smsCodeSent: {
+      type: Boolean,
+      default: false,
+    },
     active: {
       type: Boolean,
       default: true,
