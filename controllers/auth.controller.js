@@ -43,9 +43,7 @@ const createSendToken = (user, statusCode, req, res) => {
   res.status(statusCode).json({
     status: 'success',
     token,
-    data: {
-      user,
-    },
+    data: user,
   });
 };
 
@@ -56,7 +54,7 @@ const createSendToken = (user, statusCode, req, res) => {
  */
 export const checkPhoneNumber = (req, res, next) => {
   const phoneNumber = req.body.phone;
-  const cameroonPhoneRegex = /^6(?:[578]\d|5[0-4])\d{6}$/;
+  const cameroonPhoneRegex = /^6\d+$/;
   if (phoneNumber.startsWith('+237') && phoneNumber.length === 13) {
     // If the string starts with +237, do nothing
     next();

@@ -21,11 +21,17 @@ router.route('/count', userController.countUsers);
 // User routes
 router.get('/me', userController.getMe, userController.getUser);
 router.patch('/update-me', userController.updateMe);
+router.patch('/update-push-token', userController.updatePushToken);
 router.patch(
   '/update-my-photo',
   userController.uploadUserPhoto,
   userController.resizeUserPhoto,
   userController.updateMe
+);
+router.get(
+  '/my-services',
+  authController.restrictTo(eUserRole.PROVIDER),
+  userController.getUserServices
 );
 router.patch(
   '/toggle-my-services',
