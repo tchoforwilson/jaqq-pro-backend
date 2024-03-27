@@ -105,9 +105,7 @@ const updateMe = catchAsync(async (req, res, next) => {
   res.status(eStatusCode.SUCCESS).json({
     status: 'success',
     message: 'data updated!',
-    data: {
-      user: updatedUser,
-    },
+    data: updatedUser,
   });
 });
 
