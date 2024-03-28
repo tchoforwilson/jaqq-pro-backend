@@ -1,11 +1,10 @@
 import { promisify } from 'es6-promisify';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
-import catchSocketAsync from '../utilities/catchSocketAsync.js';
 import SocketError from '../utilities/socketError.js';
 import config from '../configurations/config.js';
 
-export default catchSocketAsync(async (socket) => {
+const onConnection = async (socket) => {
   // 1. Get token from header
   let token;
   if (socket.handshake.headers.token) {
@@ -13,7 +12,7 @@ export default catchSocketAsync(async (socket) => {
   }
 
   // 2. check if token
-  if (!token) return next(new SocketError('You are not allowed to login!'));
+  if (!token) return SocketError(socket, 'You are not allowed to login!');
 
   // 3. Verify token
   const decoded = await promisify(jwt.verify)(token, config.jwt.secret);
@@ -22,24 +21,26 @@ export default catchSocketAsync(async (socket) => {
   const currentuser = await User.findById(decoded.id);
 
   if (!currentuser)
-    return next(
-      new SocketError('The user belonging to this token no longer exists!')
+    return SocketError(
+      socket,
+      'The user belonging to this token no longer exists!'
     );
 
   // 5. Check if user changed password after the token was issued
-  if (currentuser.changedPasswordAfter(decoded.iat))
-    return next(
-      new SocketError('User received changed password! Please log in again,')
+  if (currentuser.changedPasswordAfter(decoded.iat)) {
+    return SocketError(
+      socket,
+      'User received changed password! Please log in again,'
     );
-
+  }
   // 6. Update user connection
   currentuser.online = true;
   currentuser.lastConnection = Date.now();
   currentuser.connectionId = socket.id;
-  await currentuser.save({ validateBeforeSave: false });
+  const updatedUser = await currentuser.save({ validateModifiedOnly: true });
 
   // 7. Emit user:connected event
-  socket.emit('connected', { data: currentuser });
+  socket.emit('connected', { data: updatedUser });
 
   /**
    * @bref Current user location
@@ -68,4 +69,6 @@ export default catchSocketAsync(async (socket) => {
 
     socket.emit('disconnected', { data: currentuser });
   });
-});
+};
+
+export default onConnection;
