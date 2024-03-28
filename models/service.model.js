@@ -2,9 +2,9 @@ import { Schema, model } from 'mongoose';
 
 const servicesSchema = new Schema(
   {
-    label: {
+    title: {
       type: String,
-      required: [true, 'Service must have a label!'],
+      required: [true, 'Service must have a title!'],
       unique: [true, 'Service already exists'],
     },
     numOfProviders: Number,
