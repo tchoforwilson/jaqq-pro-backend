@@ -76,8 +76,16 @@ const userSchema = new Schema(
     connectionId: String,
     lastConnection: Date,
     pushToken: String,
-    location: pointSchema,
-    currentLocation: pointSchema,
+    location: {
+      name: String,
+      location: pointSchema,
+      category: String,
+    },
+    currentLocation: {
+      name: String,
+      location: pointSchema,
+      category: String,
+    },
     password: {
       type: String,
       required: [true, 'Please provide a password!'],
