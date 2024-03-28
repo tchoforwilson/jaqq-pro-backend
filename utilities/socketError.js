@@ -1,19 +1,12 @@
 /**
- * @breif Class to handle Applications errors,
- * @details Set the error message and status code
+ * @breif Function to handle socket errors
+ * @details Emit the error message to the connected user
+ * @param {Object} socket The socket connection object
+ * @param {String} message The error message
  */
-export default class SocketError extends Error {
-  /**
-   * @brief Constructor for socket error
-   * @param {String} message -> Error message
-   */
-  constructor(message) {
-    super(message);
 
-    this.type = 'socket';
-    this.status = `${type}`.startsWith('socket') ? 'fail' : 'error';
-    this.isOperational = true;
+const SocketError = (socket, message) => {
+  socket.emit('error', message);
+};
 
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
+export default SocketError;
