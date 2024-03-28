@@ -21,6 +21,7 @@ router.route('/count', userController.countUsers);
 // User routes
 router.get('/me', userController.getMe, userController.getUser);
 router.patch('/update-me', userController.updateMe);
+router.patch('/update-user-location', userController.updateUserLocation);
 router.patch('/update-push-token', userController.updatePushToken);
 router.patch(
   '/update-my-photo',
