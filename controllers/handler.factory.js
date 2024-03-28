@@ -176,11 +176,10 @@ const count = (Model) =>
   catchAsync(async (req, res, next) => {
     // 1. Build filter
     let filtered = {};
-    if (req.params.userId) filtered.category = req.params.userId;
-    if (req.params.taskId) filtered.store = req.params.taskId;
+    if (req.params.userId) filtered.user = req.params.userId;
+    if (req.params.taskId) filtered.task = req.params.taskId;
     if (req.params.serviceId) filtered.service = req.params.serviceId;
     if (req.params.reviewId) filtered.review = req.params.reviewId;
-    if (req.params.pricingId) filtered.product = req.params.pricingId;
 
     // 2. Create search query
     const searchQuery = { ...filtered, ...req.query };
