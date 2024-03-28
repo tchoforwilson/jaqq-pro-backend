@@ -54,7 +54,7 @@ const toggleMyServices = catchAsync(async (req, res, next) => {
     {
       services: req.body.services,
     },
-    { new: true, runValidators: false }
+    { new: true }
   );
 
   // 2. Check if the task are updated or user not found
@@ -92,8 +92,7 @@ const updateMe = catchAsync(async (req, res, next) => {
     'birthday',
     'email',
     'services',
-    'photo',
-    'location'
+    'photo'
   );
 
   // 3) Update user document
@@ -110,6 +109,32 @@ const updateMe = catchAsync(async (req, res, next) => {
 });
 
 /**
+ * @breif Update user password
+ */
+const updateUserLocation = catchAsync(async (req, res, next) => {
+  // 1. Get user
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      location: req.body.location,
+    },
+    { new: true, runValidators: false }
+  );
+
+  // 2. Check if  the location is updated or user not found
+  if (!user) {
+    return next(new AppError(eStatusCode.NOT_FOUND, 'User not found!'));
+  }
+
+  // 3. Send response
+  res.status(eStatusCode.SUCCESS).json({
+    status: 'success',
+    message: 'Location updated successfully',
+    data: user,
+  });
+});
+
+/**
  * @breif Update user push notification token
  */
 const updatePushToken = catchAsync(async (req, res, next) => {
@@ -122,7 +147,7 @@ const updatePushToken = catchAsync(async (req, res, next) => {
     { new: true, runValidators: false }
   );
 
-  // 2. Check if  the task are updated or user not found
+  // 2. Check if  the push is updated or user not found
   if (!user) {
     return next(new AppError(eStatusCode.NOT_FOUND, 'User not found!'));
   }
@@ -187,6 +212,7 @@ export default {
   resizeUserPhoto,
   getMe,
   updateMe,
+  updateUserLocation,
   updatePushToken,
   getUserServices,
   toggleMyServices,
