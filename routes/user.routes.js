@@ -35,7 +35,7 @@ router.get(
   userController.getUserServices
 );
 router.patch(
-  '/toggle-my-services',
+  '/update-my-services',
   authController.restrictTo(eUserRole.PROVIDER),
   userController.toggleMyServices
 );
