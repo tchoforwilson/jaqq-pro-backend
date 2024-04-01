@@ -89,6 +89,7 @@ const updateMe = catchAsync(async (req, res, next) => {
     req.body,
     'firstname',
     'lastname',
+    'gender',
     'birthday',
     'email',
     'services',
