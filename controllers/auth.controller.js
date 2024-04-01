@@ -239,14 +239,16 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
     return next(new AppError('Code did not match', eStatusCode.FORBIDDEN));
   }
   // 4. Update user verification status to true
-  user.lastVerificationSMSCode = undefined;
-  user.smsCodeExpiresAt = undefined;
-  user.smsCodeSent = undefined;
-  user.phoneValidated = true;
-  const updatedUser = await user.save({
-    validateModifiedOnly: false,
-    new: true,
-  });
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      lastVerificationSMSCode: undefined,
+      smsCodeExpiresAt: undefined,
+      smsCodeSent: undefined,
+      phoneValidated: true,
+    },
+    { new: true }
+  );
 
   // 5. Send response
   res.status(eStatusCode.SUCCESS).json({
