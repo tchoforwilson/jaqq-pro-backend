@@ -31,8 +31,9 @@ const taskSchema = new Schema(
       default: eTaskStatus.PENDING,
     },
     location: {
-      type: pointSchema,
-      required: [true, 'Specify task location'],
+      name: String,
+      location: pointSchema,
+      category: String,
     },
     pricing: {
       minPrice: {
@@ -62,7 +63,7 @@ const userSelect =
 taskSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'service',
-    select: '_id label',
+    select: '_id title',
   })
     .populate({
       path: 'user',
