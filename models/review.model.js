@@ -39,6 +39,9 @@ reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'task',
     select: 'service location',
+  }).populate({
+    path: 'user',
+    select: 'photo firstname lastname phone',
   });
   next();
 });
