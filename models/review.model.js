@@ -40,7 +40,7 @@ reviewSchema.pre(/^find/, function (next) {
     path: 'task',
     select: 'service location',
   }).populate({
-    path: 'user',
+    path: 'provider',
     select: 'photo firstname lastname phone',
   });
   next();
