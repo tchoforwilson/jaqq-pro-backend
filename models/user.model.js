@@ -114,6 +114,16 @@ const userSchema = new Schema(
 userSchema.index({ location: '2dsphere' });
 
 /**
+ * @breif Fetch user services
+ */
+userSchema.pre(/^find/, function () {
+  this.populate({
+    path: 'services',
+    select: '_id title',
+  });
+});
+
+/**
  * @breif middleware to hash user password before save
  */
 userSchema.pre('save', async function (next) {
