@@ -117,9 +117,9 @@ const updateUserLocation = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(
     req.user.id,
     {
-      location: req.body.location,
+      location: req.body,
     },
-    { new: true, runValidators: false }
+    { new: true }
   );
 
   // 2. Check if  the location is updated or user not found
