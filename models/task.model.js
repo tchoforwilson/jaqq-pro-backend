@@ -30,11 +30,7 @@ const taskSchema = new Schema(
       enum: [...Object.values(eTaskStatus)],
       default: eTaskStatus.PENDING,
     },
-    location: {
-      name: String,
-      location: pointSchema,
-      category: String,
-    },
+    location: pointSchema,
     pricing: {
       minPrice: {
         type: Number,

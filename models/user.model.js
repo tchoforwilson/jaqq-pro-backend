@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import pointSchema from '../schemas/point.schema.js';
 import eUserRole from '../utilities/enums/e.user-role.js';
 import eGender from '../utilities/enums/e.gender.js';
+import { isPointInPolygon } from 'geolib';
 
 const userSchema = new Schema(
   {
@@ -34,7 +35,10 @@ const userSchema = new Schema(
       maxlength: [13, 'A phone number must be 13 digits'],
       unique: true,
     },
-    birthday: Date,
+    birthday: {
+      type: Date,
+      default: Date.now(),
+    },
     photo: String,
     phoneValidated: {
       type: Boolean,
@@ -76,16 +80,8 @@ const userSchema = new Schema(
     connectionId: String,
     lastConnection: Date,
     pushToken: String,
-    location: {
-      name: String,
-      location: pointSchema,
-      category: String,
-    },
-    currentLocation: {
-      name: String,
-      location: pointSchema,
-      category: String,
-    },
+    location: pointSchema,
+    currentLocation: pointSchema,
     password: {
       type: String,
       required: [true, 'Please provide a password!'],
