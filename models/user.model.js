@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 import pointSchema from '../schemas/point.schema.js';
 import eUserRole from '../utilities/enums/e.user-role.js';
 import eGender from '../utilities/enums/e.gender.js';
-import { isPointInPolygon } from 'geolib';
 
 const userSchema = new Schema(
   {
@@ -108,6 +107,7 @@ const userSchema = new Schema(
 );
 
 userSchema.index({ location: '2dsphere' });
+userSchema.index({ currentLocation: '2dsphere' });
 
 /**
  * @breif Fetch user services
