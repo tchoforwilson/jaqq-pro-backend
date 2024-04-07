@@ -3,6 +3,6 @@
  */
 
 export default {
-  MALE: 'male',
-  FEMALE: 'female',
+  MALE: 'Male',
+  FEMALE: 'Female',
 };
