@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config({ path: "./.env.development" });
+import dotenv from 'dotenv';
+dotenv.config({ path: './.env.development' });
 
 /**
  * @breif Configuration object to hold all environmental variables
@@ -11,7 +11,7 @@ const config = {
    */
   env: process.env.NODE_ENV,
   port: process.env.PORT || 9000,
-  prefix: process.env.API_PREFIX || "/api",
+  prefix: process.env.API_PREFIX || '/api',
   cameroon_country_code: process.env.CAMEROON_COUNTRY_CODE,
   /**
    * @breif Database for various environments
@@ -39,6 +39,12 @@ const config = {
     sid: process.env.TWILIO_ACCOUNT_SID,
     token: process.env.TWILIO_AUTH_TOKEN,
     from: process.env.TWILIO_FROM,
+  },
+  /**
+   * @breif Expo access token
+   */
+  expo: {
+    accessToken: process.env.EXPO_ACCESS_TOKEN,
   },
   /**
    * @breif Setup remote url
