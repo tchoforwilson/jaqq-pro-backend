@@ -76,7 +76,7 @@ export const checkPhoneNumber = (req, res, next) => {
  */
 const generateAndSendSMSCode = catchAsync(async (req, res, next) => {
   // 1. Generate random sms code
-  let code = '';
+  let code;
   do {
     code = Randomstring.generate({
       length: SMS_LENGTH,
@@ -239,18 +239,16 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
     return next(new AppError('Code did not match', eStatusCode.FORBIDDEN));
   }
   // 4. Update user verification status to true
-  const updatedUser = await User.findByIdAndUpdate(
-    req.user.id,
-    {
-      lastVerificationSMSCode: undefined,
-      smsCodeExpiresAt: undefined,
-      smsCodeSent: undefined,
-      phoneValidated: true,
-    },
-    { new: true }
-  );
+  user.lastVerificationSMSCode = undefined;
+  user.smsCodeExpiresAt = undefined;
+  user.smsCodeSent = undefined;
+  user.phoneValidated = true;
+  await user.save({ validateBeforeSave: false });
 
-  // 5. Send response
+  // 5. Get updated user
+  const updatedUser = await User.findById(req.user.id);
+
+  // 6. Send response
   res.status(eStatusCode.SUCCESS).json({
     status: 'success',
     message: 'Your phone number is verified',
