@@ -18,6 +18,7 @@ import taskRouter from './routes/task.routes.js';
 import serviceRouter from './routes/service.routes.js';
 import pricingRouter from './routes/pricing.routes.js';
 import reviewRouter from './routes/review.routes.js';
+import auth from './actions/auth.socket.js';
 
 // Start express app
 const app = express();
@@ -68,6 +69,7 @@ app.use(`${config.prefix}/reviews`, reviewRouter);
 app.use(`${config.prefix}/pricings`, pricingRouter);
 
 // Socket Connections
+io.use(auth.protect);
 io.on('connection', onConnection);
 
 // INVALID ROUTES
