@@ -65,7 +65,7 @@ const toggleMyServices = catchAsync(async (req, res, next) => {
   // 3. Send response
   res.status(eStatusCode.SUCCESS).json({
     status: 'success',
-    message: 'Services updated successfully',
+    message: 'Services successfully updated!',
     data: user,
   });
 });
@@ -104,7 +104,7 @@ const updateMe = catchAsync(async (req, res, next) => {
 
   res.status(eStatusCode.SUCCESS).json({
     status: 'success',
-    message: 'data updated!',
+    message: 'Profile successfully updated!',
     data: updatedUser,
   });
 });
