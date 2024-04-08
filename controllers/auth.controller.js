@@ -220,6 +220,12 @@ const login = catchAsync(async (req, res, next) => {
   createSendToken(user, eStatusCode.SUCCESS, req, res);
 });
 
+/**
+ * @desc verify user sms code sent
+ * @route POST /auth/verify-sms-code
+ * @access Private Because user needs to be already authenticated
+ */
+
 const verifySMSCode = catchAsync(async (req, res, next) => {
   // 1. Get code
   const code = parseInt(req.body.code, 10);
@@ -257,9 +263,9 @@ const verifySMSCode = catchAsync(async (req, res, next) => {
 });
 
 /**
- * @breif middleware function to protect routes, this middleware
+ * @desc middleware function to protect routes, this middleware
  * function ensures only login users can access certain routes
- * @return {Function}
+ * @access Public because user is not yet login
  */
 const protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
