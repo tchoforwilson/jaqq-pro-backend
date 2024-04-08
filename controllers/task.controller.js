@@ -24,85 +24,118 @@ const setTaskUserId = (req, res, next) => {
 };
 
 /**
+ * @breif Assigntask to provider who is online
+ * @param {Object} task
+ */
+const assignedTaskToProvider = async (task) => {
+  try {
+    // 1. Search for online service providers
+    const providers = await User.aggregate([
+      {
+        $geoNear: {
+          key: 'location',
+          near: {
+            type: 'Point',
+            coordinates: [
+              task.location.coordinates[0],
+              task.location.coordinates[1],
+            ],
+          },
+          distanceField: 'distance',
+          maxDistance: MAX_PROVIDER_DISTANCE,
+          spherical: true,
+        },
+      },
+      {
+        $match: {
+          online: true,
+          role: eUserRole.PROVIDER,
+          services: { $in: [task.service._id] },
+        },
+      },
+      {
+        $project: {
+          distance: 1,
+        },
+      },
+    ]);
+
+    // 2. Assign the task to a provider if found
+    if (providers.length > CONST_ZEROU) {
+      task.provider = providers[CONST_ZEROU]._id;
+      task.status = eTaskStatus.ASSIGNED;
+
+      // 3. Save updated task
+      await task.save();
+
+      // 4. Emit message
+      io.emit('task:assigned', { message: 'Task assigned!', data: task });
+    } else {
+      io.emit('task:no-provider', { message: 'No provider found yet!' });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+/**
  * @breif Reassign all pending tasks
  */
-const reassignTasks = handleAsync(async () => {
-  // 1. Get all taskes with pending status
-  const tasks = await Task.find({ status: eTaskStatus.PENDING });
+const reassignTasks = async () => {
+  try {
+    // 1. Get all taskes with pending status
+    const tasks = await Task.find({ status: eTaskStatus.PENDING }).select(
+      'status location'
+    );
 
-  // 2. If there are any tasks, assign them
-  if (tasks.length > CONST_ZEROU) {
-    for (const task of tasks) {
-      assignedTaskToProvider(task);
+    // 2. If there are any tasks, assign them
+    if (tasks.length > CONST_ZEROU) {
+      for (const task of tasks) {
+        assignedTaskToProvider(task);
+      }
     }
+  } catch (error) {
+    console.log(error);
   }
-});
+};
 
 // Set a timeout to check for provider response
-cron.schedule(
-  '*/2 * * * *',
-  handleAsync(async () => {
-    // 1. Assign all pending tasks
-    reassignTasks();
+cron.schedule('*/2 * * * *', async () => {
+  try {
+    await reassignTasks();
 
-    // 2. Get all assigned tasks
-    const assignedTasks = await Task.find({ status: eTaskStatus.ASSIGNED });
+    const assignedTasks = await Task.find({
+      status: eTaskStatus.ASSIGNED,
+    })
+      .select('status location user')
+      .populate('provider'); // Populate the provider field
 
-    // 3. Search for tasks assigned to providers
     for (const assignTask of assignedTasks) {
-      const assignedProvider = await User.findOne({ _id: assignTask.provider });
+      const assignedProvider = assignTask.provider;
+
       if (
         !assignedProvider ||
         !assignedProvider.online ||
         assignedProvider.role !== eUserRole.PROVIDER
       ) {
-        // await assignTask.save({ validateBeforeSave: false }); TODO: Check if this works properly
-        // 4. Update task status
-        const unAssignTask = await Task.findByIdAndUpdate(assignTask.id, {
+        // Update task status
+        await Task.findByIdAndUpdate(assignTask._id, {
           provider: null,
           status: eTaskStatus.PENDING,
+          $addToSet: {
+            prevProviders: assignedProvider._id,
+          },
         });
 
-        // 5. Emit response to user about task status
+        // Emit response to user
         io.emit('task:unassigned', {
-          data: unAssignTask,
-          message: `Task ${assignTask.service.label} status updated to unassigned, as provider didn't respond within 5 minutes.`,
+          data: assignTask,
+          message: `Task ${assignTask.service.title} status updated to unassigned.`,
         });
       }
     }
-  })
-);
-
-/**
- * @breif Assigntask to provider who is online
- * @param {Object} task
- */
-const assignedTaskToProvider = handleAsync(async (task) => {
-  // 1. Search for online service providers
-  const providers = await User.find({
-    online: true,
-    role: eUserRole.PROVIDER,
-    services: { $in: [task.service] },
-    location: {
-      $near: {
-        $geometry: { type: 'Point', coordinates: task.location.coordinates },
-        $maxDistance: MAX_PROVIDER_DISTANCE,
-      },
-    },
-  });
-
-  // 2. Assign the task to a provider if found
-  if (providers.length > CONST_ZEROU) {
-    task.provider = providers[CONST_ZEROU].id;
-    task.status = eTaskStatus.ASSIGNED;
-
-    // 3. Save updated task
-    await task.save();
-
-    // 4. Emit message
-    io.emit('task:assigned', { message: 'Task assigned!', data: task });
-  } else {
-    io.emit('task:no-provider', { message: 'No provider found yet!' });
+  } catch (error) {
+    console.error('Error in cron job:', error);
   }
 });
 
@@ -114,7 +147,7 @@ const createTask = catchAsync(async (req, res, next) => {
   const newTask = await Task.create(req.body);
 
   // 2. Assign task to provider
-  assignedTaskToProvider(newTask)(next);
+  await assignedTaskToProvider(newTask);
 
   // 3. Send back response to user
   res.status(201).json({
@@ -154,7 +187,6 @@ const setInProgress = catchAsync(async (req, res, next) => {
     },
     {
       new: true,
-      runValidators: true,
     }
   );
 
@@ -171,6 +203,11 @@ const setInProgress = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * @desc Set task to ready for execution
+ * @route /tasks/:id/ready
+ * @access Private only to providers
+ */
 const setTaskReady = catchAsync(async (req, res, next) => {
   // 1. Get task
   const task = req.task;
@@ -183,7 +220,6 @@ const setTaskReady = catchAsync(async (req, res, next) => {
     },
     {
       new: true,
-      runValidators: true,
     }
   );
 
@@ -210,7 +246,6 @@ const setTaskApproved = catchAsync(async (req, res, next) => {
     },
     {
       new: true,
-      runValidators: true,
     }
   );
 
