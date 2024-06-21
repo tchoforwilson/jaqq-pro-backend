@@ -1,5 +1,5 @@
-import multer from "multer";
-import AppError from "./appError.js";
+import multer from 'multer';
+import AppError from './appError.js';
 
 /**
  * @breif Multer memory storage
@@ -13,14 +13,14 @@ const multerStorage = multer.memoryStorage();
  * @param {Callback} cb -> Callback function
  */
 const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
+  if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
-    cb(new AppError("Not an image! Please upload only images.", 400), false);
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
   }
 };
 // Maximum size of user uploaded file(photo) 1MB
-const maxImageSize = 1 * 1000 * 1000;
+const maxImageSize = 2 * 1000 * 1000;
 
 /**
  * @brief multer utility to upload image
