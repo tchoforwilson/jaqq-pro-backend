@@ -43,6 +43,21 @@ const protect = async (socket, next) => {
   next();
 };
 
+const checkUserRole = (...roles) => {
+  return (socket, next) => {
+    // roles ['admin', 'user','provider']. role='user'
+    if (!roles.includes(socket.user.role)) {
+      return SocketError(
+        socket,
+        'You do not have permission to perform this action'
+      );
+    }
+
+    next();
+  };
+};
+
 export default {
   protect,
+  checkUserRole,
 };

@@ -3,10 +3,9 @@ import SocketError from '../utilities/socketError.js';
 
 export default function (socket) {
   // A. CONTROLLERS
-  const updateUserLocation = async (location) => {
-    console.log(location);
+  const updateUserCurrentLocation = async (currentLocation) => {
     // 1. Get user
-    const user = await User.findByIdAndUpdate(socket.user.id, location);
+    const user = await User.findByIdAndUpdate(socket.user.id, currentLocation);
 
     // 2. Check if user exists
     if (!user) {
@@ -26,6 +25,6 @@ export default function (socket) {
   };
 
   // B. ROUTES
-  socket.on('currentLocation', updateUserLocation);
+  socket.on('currentLocation', updateUserCurrentLocation);
   socket.on('disconnect', disconnect);
 }
