@@ -91,7 +91,7 @@ const generateAndSendSMSCode = catchAsync(async (req, res, next) => {
 
   // 3. Send message to user
   try {
-    //await sendMessage(message, req.body.phone);
+    await sendMessage(message, req.body.phone);
     console.log(code);
   } catch (err) {
     // 4. Reset values if error in sending sms
