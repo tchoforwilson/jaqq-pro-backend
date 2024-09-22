@@ -6,6 +6,7 @@
  */
 
 const SocketError = (socket, message) => {
+  socket.broadcast.to(socket.id).emit('error', message);
   socket.emit('error', message);
 };
 
